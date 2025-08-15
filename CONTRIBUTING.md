@@ -44,25 +44,41 @@ Your `.cs` file must include YAML front matter in C# comments, followed by your 
 //     - API_KEY
 //     - BASE_URL
 // ---
-
 #:package Microsoft.Extensions.Hosting@9.0.8
 #:package ModelContextProtocol@0.3.0-preview.3
-
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Server;
 using System.ComponentModel;
 
-// Your MCP server implementation here
-public class YourMcpServer : IMcpServer
-{
-    // Implementation...
-}
-
-// Entry point and configuration
 var builder = Host.CreateApplicationBuilder(args);
-// Setup code...
+builder.Logging.AddConsole(consoleLogOptions =>
+{
+    // Configure all logs to go to stderr
+    consoleLogOptions.LogToStandardErrorThreshold = LogLevel.Trace;
+});
+
+// Register the MCP server
+builder.Services
+    .AddMcpServer()
+    .WithStdioServerTransport()
+    .WithToolsFromAssembly();
+
+// Build and run the MCP Server Application
+await builder.Build().RunAsync();
+
+//====== TOOLS ======
+
+[McpServerToolType]
+public static class Tools
+{
+    [McpServerTool, Description("Tool Description")]
+    public static string Tool(...)
+    {
+       ...
+    }
+}
 ```
 
 ### 3. Front Matter Fields
