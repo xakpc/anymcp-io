@@ -111,6 +111,11 @@ eleventyComputed:
             <div>
               <h4 class="font-semibold mb-2">2. Configure your MCP client</h4>
               <p class="text-sm text-muted-foreground mb-2">Add this configuration to your <code class="bg-muted px-1 py-0.5 rounded text-xs">.mcp.json</code> file:</p>
+              <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
+                <p class="text-sm text-blue-800">
+                  <strong>Note:</strong> This example is for Visual Studio and similar clients. For Claude Code, use <code class="bg-blue-100 px-1 py-0.5 rounded text-xs">mcpServers</code> instead of <code class="bg-blue-100 px-1 py-0.5 rounded text-xs">servers</code>.
+                </p>
+              </div>
               <pre class="language-json"><code class="language-json">{
   "servers": {
     "{{ serverData.id }}": {
