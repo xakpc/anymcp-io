@@ -9,10 +9,8 @@
 //   - formatting
 //   - calculations
 // status: stable
-// downloads: 245
-// lastUpdated: 2024-12-15
 // version: 1.0.0
-// author: Community
+// author: XAKPC Dev Labs
 // license: MIT
 // envVars: []
 // ---
