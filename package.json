@@ -5,7 +5,8 @@
     "build": "eleventy",
     "serve": "eleventy --serve",
     "start": "eleventy --serve",
-    "debug": "DEBUG=Eleventy* eleventy"
+    "debug": "DEBUG=Eleventy* eleventy",
+    "deploy": "npm run build && wrangler pages deploy _site"
   },
   "description": "A catalog of single-file MCP servers for .NET 10 Preview 4. Works with any LLM that supports local connections.",
   "main": "index.js",
@@ -34,5 +35,8 @@
     "@11ty/eleventy": "^3.1.2",
     "@11ty/eleventy-plugin-syntaxhighlight": "^5.0.2",
     "yaml": "^2.8.1"
+  },
+  "devDependencies": {
+    "wrangler": "^3.0.0"
   }
 }
