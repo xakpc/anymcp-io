@@ -1,8 +1,6 @@
 // ---
 // id: date-times-mcp
-// name: date-times-mcp.cs
 // description: Provides date and time utilities including current date/time, date calculations, and formatting
-// longDescription: A comprehensive MCP server for date and time operations. Supports getting current date/time in various formats, calculating differences between dates, and adding/subtracting time from dates.
 // tags:
 //   - datetime
 //   - utilities
@@ -12,7 +10,6 @@
 // version: 1.0.0
 // author: XAKPC Dev Labs
 // license: MIT
-// envVars: []
 // ---
 #:package Microsoft.Extensions.Hosting@9.0.8
 #:package ModelContextProtocol@0.3.0-preview.3
