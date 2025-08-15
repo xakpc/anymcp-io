@@ -1,0 +1,158 @@
+---
+layout: page.njk
+title: Home
+showBadges: true
+showNavigation: true
+---
+
+<section class="py-16 px-4 bg-gradient-to-b from-background to-muted/20">
+  <div class="container mx-auto text-center max-w-6xl">
+    <h1 class="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent leading-tight">
+      One-file MCP servers for .NET 10
+    </h1>
+
+    <p class="text-xl md:text-2xl text-muted-foreground mb-12 max-w-3xl mx-auto leading-relaxed">
+      Copy → Run. A curated catalog of single-file MCP servers ready to integrate with any LLM that supports local
+      connections.
+    </p>
+
+    <div class="max-w-2xl mx-auto">
+      <div class="flex gap-3">
+        <div class="relative flex-1">
+          <svg class="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+          <input
+            type="text"
+            id="search"
+            placeholder="Search servers (e.g., 'jira', 'database', 'ai')..."
+            class="pl-12 py-4 w-full text-lg bg-background/80 backdrop-blur-sm border-2 border-border focus:border-primary/50 rounded-lg focus:outline-none focus:ring-0"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="py-16 px-4">
+  <div class="container mx-auto max-w-6xl">
+    <div id="servers-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {% for server in serversArray %}
+        <div class="bg-card border border-border rounded-lg p-6 hover:shadow-lg transition-all duration-200 hover:border-primary/20 hover:bg-primary/5 group flex flex-col h-full" data-server="{{ server.name }} {{ server.description }} {{ server.tags | join(' ') }}">
+          <div class="flex items-start justify-between mb-3">
+            <div class="flex-1">
+              <h3 class="text-lg font-semibold group-hover:text-primary transition-colors mb-1">
+                <a href="/servers/{{ server.id }}/" class="flex items-center gap-2">
+                  {{ server.name }}
+                  <svg class="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                  </svg>
+                </a>
+              </h3>
+              <p class="text-muted-foreground text-sm line-clamp-2">{{ server.description }}</p>
+            </div>
+          </div>
+
+          <div class="flex flex-col flex-1 space-y-4">
+            <!-- Tags -->
+            <div class="flex flex-wrap gap-1">
+              {% for tag in server.tags %}
+                <span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-secondary text-secondary-foreground rounded-md">
+                  {{ tag }}
+                </span>
+              {% endfor %}
+            </div>
+
+            <!-- Environment Variables Preview -->
+            {% if server.envVars and server.envVars.length > 0 %}
+            <div class="text-xs text-muted-foreground">
+              <span class="font-medium">Env vars:</span> 
+              {% if server.envVars[0].name %}
+                {% for envVar in server.envVars %}
+                  {% if loop.index <= 2 %}{{ envVar.name }}{% if not loop.last and loop.index < 2 %}, {% endif %}{% endif %}
+                {% endfor %}
+                {% if server.envVars.length > 2 %} +{{ server.envVars.length - 2 }} more{% endif %}
+              {% else %}
+                {% for envVar in server.envVars %}
+                  {% if loop.index <= 2 %}{{ envVar }}{% if not loop.last and loop.index < 2 %}, {% endif %}{% endif %}
+                {% endfor %}
+                {% if server.envVars.length > 2 %} +{{ server.envVars.length - 2 }} more{% endif %}
+              {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Spacer to push footer to bottom -->
+            <div class="flex-1"></div>
+
+            <!-- Footer -->
+            <div class="flex items-center justify-between pt-3 border-t border-border mt-auto">
+              <div class="flex items-center text-xs text-muted-foreground">
+                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 0V2a1 1 0 00-1 1v4M8 7h8m-8 0H3a1 1 0 00-1 1v11a1 1 0 001 1h18a1 1 0 001-1V8a1 1 0 00-1-1h-5"></path>
+                </svg>
+                {{ server.createdDate | date("M/D/YYYY") if server.createdDate else server.lastUpdated | date("M/D/YYYY") }}
+              </div>
+
+              <div class="flex gap-2">
+                <button onclick="copyServerCode('{{ server.id }}', this)" class="inline-flex items-center px-3 py-1.5 text-xs font-medium bg-transparent border border-border rounded-md hover:bg-accent hover:text-accent-foreground transition-colors">
+                  <svg class="w-3 h-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                  </svg>
+                  Copy
+                </button>
+                <a href="/servers/{{ server.id }}/" class="inline-flex items-center px-3 py-1.5 text-xs font-medium bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors">
+                  View
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+    
+    <div id="no-results" class="hidden text-center py-12">
+      <div class="text-6xl mb-4">🔍</div>
+      <h3 class="text-xl font-semibold mb-2">No servers found</h3>
+      <p class="text-muted-foreground">Try adjusting your search terms or filters.</p>
+    </div>
+  </div>
+</section>
+
+{% include "footer.njk" %}
+
+{% include "copy-functionality.njk" %}
+
+<script>
+// Simple search functionality
+document.addEventListener('DOMContentLoaded', function() {
+  const searchInput = document.getElementById('search');
+  const serversGrid = document.getElementById('servers-grid');
+  const noResults = document.getElementById('no-results');
+  const serverCards = serversGrid.querySelectorAll('[data-server]');
+
+  searchInput.addEventListener('input', function() {
+    const searchTerm = this.value.toLowerCase().trim();
+    let hasResults = false;
+
+    serverCards.forEach(function(card) {
+      const serverData = card.dataset.server.toLowerCase();
+      const shouldShow = searchTerm === '' || serverData.includes(searchTerm);
+      
+      if (shouldShow) {
+        card.style.display = '';
+        hasResults = true;
+      } else {
+        card.style.display = 'none';
+      }
+    });
+
+    if (hasResults) {
+      serversGrid.classList.remove('hidden');
+      noResults.classList.add('hidden');
+    } else {
+      serversGrid.classList.add('hidden');
+      noResults.classList.remove('hidden');
+    }
+  });
+});
+</script>

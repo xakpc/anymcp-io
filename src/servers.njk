@@ -1,0 +1,226 @@
+---
+pagination:
+  data: serversArray
+  size: 1
+  alias: serverData
+permalink: "/servers/{{ serverData.id }}/"
+layout: page.njk
+showBadges: false
+showNavigation: false
+eleventyComputed:
+  title: "{{ serverData.name }}"
+  description: "{{ serverData.description }}"
+---
+
+<div class="container mx-auto px-4 py-8 max-w-6xl">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Main Content -->
+    <div class="lg:col-span-2 space-y-6">
+      <!-- Server Info -->
+      <div>
+        <div class="flex items-start justify-between mb-4">
+          <div>
+            <h1 class="text-3xl font-bold mb-2">{{ serverData.name }}</h1>
+            {% if serverData.longDescription %}
+            <p class="text-lg text-muted-foreground mb-4">{{ serverData.longDescription }}</p>
+            {% else %}
+            <p class="text-lg text-muted-foreground mb-4">{{ serverData.description }}</p>
+            {% endif %}
+          </div>
+          {% if serverData.status and serverData.status != 'stable' %}
+          <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium
+            {% if serverData.status == 'beta' %}bg-yellow-100 text-yellow-800 border border-yellow-200{% endif %}
+            {% if serverData.status == 'alpha' %}bg-red-100 text-red-800 border border-red-200{% endif %}">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+            </svg>
+            {{ serverData.status }}
+          </span>
+          {% endif %}
+        </div>
+
+        <div class="flex flex-wrap gap-2 mb-6">
+          {% for tag in serverData.tags %}
+            <span class="inline-flex items-center px-2.5 py-1 text-xs font-medium bg-secondary text-secondary-foreground rounded-md">
+              {{ tag }}
+            </span>
+          {% endfor %}
+        </div>
+
+        <div class="flex gap-3">
+          <button onclick="copyServerCodeLarge('{{ serverData.id }}', this)" class="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+            </svg>
+            Copy Code
+          </button>
+          <button onclick="downloadServerFile('{{ serverData.name }}')" class="inline-flex items-center px-4 py-2 bg-transparent border border-border rounded-md hover:bg-accent hover:text-accent-foreground transition-colors">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            Download File
+          </button>
+          <a href="https://github.com/xakpc/anymcp-io/blob/main/src/_data/mcp/{{ serverData.name }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center px-4 py-2 bg-transparent border border-border rounded-md hover:bg-accent hover:text-accent-foreground transition-colors">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+            </svg>
+            View on GitHub
+          </a>
+        </div>
+      </div>
+
+      <div class="border-t border-border"></div>
+
+      <!-- Code Viewer -->
+      {% if serverData.code %}
+      <div>
+        <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
+          <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m8 8-4 4 4 4m8 0 4-4-4-4m-2-3-4 14"/>
+          </svg>
+          Source Code
+        </h2>
+        <div class="relative">
+          <pre class="language-csharp"><code class="language-csharp">{{ serverData.displayCode | safe }}</code></pre>
+          <button onclick="copyServerCode('{{ serverData.id }}', this)" class="absolute top-3 right-3 inline-flex items-center px-3 py-1.5 text-xs font-medium bg-slate-700 text-slate-100 rounded hover:bg-slate-600 transition-colors">
+            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+            </svg>
+            Copy
+          </button>
+        </div>
+      </div>
+
+      <div class="border-t border-border"></div>
+      {% endif %}
+
+      <!-- Run Instructions -->
+      <div>
+        <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1.586a1 1 0 01.707.293L12 11l.707-.707A1 1 0 0113.414 10H15M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          How to Run
+        </h2>
+        <div class="bg-card border border-border rounded-lg p-6">
+          <div class="space-y-4">
+            <div>
+              <h4 class="font-semibold mb-2">1. Save the server code</h4>
+              <p class="text-sm text-muted-foreground">Copy the code above and save it as <code class="bg-muted px-1 py-0.5 rounded text-xs">{{ serverData.name }}</code></p>
+            </div>
+            <div>
+              <h4 class="font-semibold mb-2">2. Configure your MCP client</h4>
+              <p class="text-sm text-muted-foreground mb-2">Add this configuration to your <code class="bg-muted px-1 py-0.5 rounded text-xs">.mcp.json</code> file:</p>
+              <pre class="language-json"><code class="language-json">{
+  "servers": {
+    "{{ serverData.id }}": {
+      "type": "stdio",
+      "command": "dotnet",
+      "args": ["run", "C:\\path\\to\\{{ serverData.name }}"]{% if serverData.envVars and serverData.envVars.length > 0 %},
+      "env": {
+        {%- for envVar in serverData.envVars %}
+        "{{ envVar }}": "<YOUR_{{ envVar }}>"{%- if not loop.last %},{% endif %}
+        {%- endfor %}
+      }{% endif %}
+    }
+  }
+}</code></pre>
+            </div>
+            <div>
+              <h4 class="font-semibold mb-2">3. Set environment variables</h4>
+              <p class="text-sm text-muted-foreground">Configure any required environment variables (see sidebar)</p>
+            </div>
+            <div>
+              <h4 class="font-semibold mb-2">4. Restart your LLM client</h4>
+              <p class="text-sm text-muted-foreground">Restart Claude Desktop, Continue, or your preferred MCP client</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="space-y-6">
+      <!-- Stats Card -->
+      {% if serverData.downloads or serverData.version or serverData.license or serverData.lastUpdated %}
+      <div class="bg-card border border-border rounded-lg p-6">
+        <h3 class="text-lg font-semibold mb-4">Statistics</h3>
+        <div class="space-y-4">
+          {% if serverData.downloads and serverData.downloads > 0 %}
+          <div class="flex justify-between">
+            <span class="text-muted-foreground">Downloads</span>
+            <span class="font-medium">{{ serverData.downloads | localeString }}</span>
+          </div>
+          {% endif %}
+          {% if serverData.version %}
+          <div class="flex justify-between">
+            <span class="text-muted-foreground">Version</span>
+            <span class="font-medium">{{ serverData.version }}</span>
+          </div>
+          {% endif %}
+          {% if serverData.license %}
+          <div class="flex justify-between">
+            <span class="text-muted-foreground">License</span>
+            <span class="font-medium">{{ serverData.license }}</span>
+          </div>
+          {% endif %}
+          {% if serverData.lastUpdated %}
+          <div class="flex justify-between">
+            <span class="text-muted-foreground">Updated</span>
+            <span class="font-medium">{{ serverData.lastUpdated | date("M/D/YYYY") }}</span>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Environment Variables -->
+      {% if serverData.envVars and serverData.envVars.length > 0 %}
+      <div class="bg-card border border-border rounded-lg p-6">
+        <div class="mb-4">
+          <h3 class="text-lg font-semibold flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            </svg>
+            Environment Variables
+          </h3>
+          <p class="text-sm text-muted-foreground">Required configuration for this server</p>
+        </div>
+        <div class="space-y-3">
+          {% for envVar in serverData.envVars %}
+            <div class="space-y-1">
+              <div class="flex items-center gap-2">
+                <code class="text-sm bg-muted px-2 py-1 rounded font-mono">
+                  {% if envVar.name %}{{ envVar.name }}{% else %}{{ envVar }}{% endif %}
+                </code>
+                {% if envVar.required %}
+                <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-destructive text-destructive-foreground">
+                  Required
+                </span>
+                {% endif %}
+              </div>
+              {% if envVar.description %}
+              <p class="text-sm text-muted-foreground">{{ envVar.description }}</p>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Author Info -->
+      {% if serverData.author and serverData.author != 'Unknown' %}
+      <div class="bg-card border border-border rounded-lg p-6">
+        <h3 class="text-lg font-semibold mb-4">Author</h3>
+        <p class="font-medium">{{ serverData.author }}</p>
+        <p class="text-sm text-muted-foreground mt-1">Maintained by the AnyMCP community</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% include "footer.njk" %}
+
+{% include "copy-functionality.njk" %}

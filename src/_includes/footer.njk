@@ -1,0 +1,78 @@
+<footer class="border-t py-16 px-4 bg-muted/30">
+  <div class="container mx-auto max-w-6xl">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div class="col-span-1 md:col-span-2">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+            <svg class="w-6 h-6 text-primary-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"></path>
+            </svg>
+          </div>
+          <span class="text-2xl font-bold">{{ site.title.split(' - ')[0] }}</span>
+        </div>
+        <p class="text-muted-foreground mb-6 max-w-md text-lg leading-relaxed">
+          A catalog of single-file MCP servers for .NET 10 Preview 4. Works with any LLM that supports local
+          connections.
+        </p>
+        <div class="flex gap-3">
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-sm border border-border">
+            MIT Licensed
+          </span>
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-sm border border-border">
+            Open Source
+          </span>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="font-semibold text-lg mb-6">Resources</h3>
+        <ul class="space-y-3 text-muted-foreground">
+          <li>
+            <a href="/" class="hover:text-foreground transition-colors text-base">
+              Home
+            </a>
+          </li>
+          <li>
+            <a href="/setup/" class="hover:text-foreground transition-colors text-base">
+              Getting Started
+            </a>
+          </li>
+          <li>
+            <a
+              href="{{ site.github }}"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="hover:text-foreground transition-colors text-base"
+            >
+              GitHub Repository
+            </a>
+          </li>
+          <li>
+            <a
+              href="{{ site.github }}/issues/new"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="hover:text-foreground transition-colors text-base"
+            >
+              Submit Server
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://xakpc.info/building-a-powerful-mcp-server-in-net-with-just-20-lines-of-code"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="hover:text-foreground transition-colors text-base"
+            >
+              Read the Article
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="border-t mt-12 pt-8 text-center text-muted-foreground">
+      <p>&copy; 2024 {{ site.title.split(' - ')[0] }}. All rights reserved.</p>
+    </div>
+  </div>
+</footer>

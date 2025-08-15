@@ -1,7 +1,38 @@
 {
-  "name": "vanilla-basic",
+  "name": "anymcp-io",
   "version": "1.0.0",
-  "scripts": { 
-    "start": "sirv ./src public --cors --single --no-clear --port 8000"
+  "scripts": {
+    "build": "eleventy",
+    "serve": "eleventy --serve",
+    "start": "eleventy --serve",
+    "debug": "DEBUG=Eleventy* eleventy"
+  },
+  "description": "A catalog of single-file MCP servers for .NET 10 Preview 4. Works with any LLM that supports local connections.",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xakpc/anymcp-io.git"
+  },
+  "keywords": [
+    "mcp",
+    "dotnet",
+    "servers",
+    "ai",
+    "llm"
+  ],
+  "author": "AnyMCP Team",
+  "license": "MIT",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/xakpc/anymcp-io/issues"
+  },
+  "homepage": "https://github.com/xakpc/anymcp-io#readme",
+  "dependencies": {
+    "@11ty/eleventy": "^3.1.2",
+    "@11ty/eleventy-plugin-syntaxhighlight": "^5.0.2",
+    "yaml": "^2.8.1"
   }
 }

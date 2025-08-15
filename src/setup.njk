@@ -1,0 +1,255 @@
+---
+layout: page.njk
+title: Setup Guide
+description: Get started with single-file MCP servers
+showBadges: false
+showNavigation: false
+---
+
+<div class="min-h-screen bg-gradient-to-br from-slate-50 to-cyan-50">
+  <div class="container mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+      <a href="/" class="inline-flex items-center text-muted-foreground hover:text-foreground transition-colors mb-4">
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+        Back to Catalog
+      </a>
+
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 bg-cyan-800 rounded-lg flex items-center justify-center">
+          <span class="text-white font-bold text-lg">#</span>
+        </div>
+        <div>
+          <h1 class="text-3xl font-bold font-sans text-slate-900">Setup Guide</h1>
+          <p class="text-slate-600 font-serif">Get started with single-file MCP servers</p>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap gap-2">
+        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-cyan-100 text-cyan-800">
+          .NET 10 Preview 4
+        </span>
+        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+          Any LLM
+        </span>
+        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+          Single File
+        </span>
+      </div>
+    </div>
+
+    <!-- Prerequisites -->
+    <div class="bg-card border border-border rounded-lg p-6 mb-8">
+      <h2 class="text-xl font-semibold mb-3 flex items-center gap-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+        </svg>
+        Prerequisites
+      </h2>
+      <p class="text-muted-foreground mb-4">What you need before getting started</p>
+      <ul class="space-y-2 text-slate-700">
+        <li>• .NET 10 Preview 4 installed</li>
+        <li>• An LLM client that supports MCP (Claude Desktop, Continue, etc.)</li>
+        <li>• A single .cs file from the catalog</li>
+      </ul>
+    </div>
+
+    <!-- Basic Configuration -->
+    <div class="bg-card border border-border rounded-lg p-6 mb-8">
+      <h2 class="text-xl font-semibold mb-3 flex items-center gap-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+        </svg>
+        Basic Configuration
+      </h2>
+      <p class="text-muted-foreground mb-4">Create .mcp.json in your project root</p>
+      <div class="relative">
+        <pre class="language-json"><code class="language-json">{
+  "servers": {
+    "MyUtilityServer": {
+      "type": "stdio",
+      "command": "dotnet",
+      "args": ["run", "C:\\\\path\\\\to\\\\your\\\\mcp-server.cs"]
+    }
+  }
+}</code></pre>
+        <button onclick="copyText(`{
+  \"servers\": {
+    \"MyUtilityServer\": {
+      \"type\": \"stdio\",
+      \"command\": \"dotnet\",
+      \"args\": [\"run\", \"C:\\\\\\\\path\\\\\\\\to\\\\\\\\your\\\\\\\\mcp-server.cs\"]
+    }
+  }
+}`)" class="absolute top-2 right-2 inline-flex items-center px-3 py-1.5 text-xs font-medium bg-slate-700 text-slate-100 rounded hover:bg-slate-600 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Environment Variables -->
+    <div class="bg-card border border-border rounded-lg p-6 mb-8">
+      <h2 class="text-xl font-semibold mb-3">Environment Variables</h2>
+      <p class="text-muted-foreground mb-4">Pass tokens and authentication keys securely</p>
+      <div class="space-y-6">
+        <div>
+          <h4 class="font-semibold mb-2">Configuration with inputs:</h4>
+          <div class="relative">
+            <pre class="language-json"><code class="language-json">{
+  "inputs": [
+    {
+      "id": "user_email",
+      "description": "Your email",
+      "type": "promptString",
+      "password": true
+    }
+  ],
+  "servers": {
+    "DotnetMcpFile": {
+      "type": "stdio",
+      "command": "dotnet",
+      "args": ["run", "C:\\\\path\\\\to\\\\your\\\\mcp-server.cs"],
+      "env": {
+        "USER_EMAIL": "${input:user_email}"
+      }
+    }
+  }
+}</code></pre>
+            <button onclick="copyText(`{
+  \"inputs\": [
+    {
+      \"id\": \"user_email\",
+      \"description\": \"Your email\",
+      \"type\": \"promptString\",
+      \"password\": true
+    }
+  ],
+  \"servers\": {
+    \"DotnetMcpFile\": {
+      \"type\": \"stdio\",
+      \"command\": \"dotnet\",
+      \"args\": [\"run\", \"C:\\\\\\\\path\\\\\\\\to\\\\\\\\your\\\\\\\\mcp-server.cs\"],
+      \"env\": {
+        \"USER_EMAIL\": \"\${input:user_email}\"
+      }
+    }
+  }
+}`)" class="absolute top-2 right-2 inline-flex items-center px-3 py-1.5 text-xs font-medium bg-slate-700 text-slate-100 rounded hover:bg-slate-600 transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <h4 class="font-semibold mb-2">Using environment variables in C#:</h4>
+          <div class="relative">
+            <pre class="language-csharp"><code class="language-csharp">[McpServerToolType]
+public static class EnvironmentExamples
+{
+    [McpServerTool, Description("Gets environment variable value")]
+    public static string GetEnvironmentVariable(string variableName, string? defaultValue = null)
+    {
+        var value = Environment.GetEnvironmentVariable(variableName);
+        
+        if (string.IsNullOrEmpty(value))
+        {
+            if (defaultValue != null)
+                return $"Environment variable '{variableName}' not found, using default: {defaultValue}";
+            else
+                return $"Environment variable '{variableName}' not found";
+        }
+        
+        return $"{variableName} = {value}";
+    }
+}</code></pre>
+            <button onclick="copyText(`[McpServerToolType]
+public static class EnvironmentExamples
+{
+    [McpServerTool, Description(\"Gets environment variable value\")]
+    public static string GetEnvironmentVariable(string variableName, string? defaultValue = null)
+    {
+        var value = Environment.GetEnvironmentVariable(variableName);
+        
+        if (string.IsNullOrEmpty(value))
+        {
+            if (defaultValue != null)
+                return $\"Environment variable '{variableName}' not found, using default: {defaultValue}\";
+            else
+                return $\"Environment variable '{variableName}' not found\";
+        }
+        
+        return $\"{variableName} = {value}\";
+    }
+}`)" class="absolute top-2 right-2 inline-flex items-center px-3 py-1.5 text-xs font-medium bg-slate-700 text-slate-100 rounded hover:bg-slate-600 transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Docker Deployment -->
+    <div class="bg-card border border-border rounded-lg p-6 mb-8">
+      <h2 class="text-xl font-semibold mb-3 flex items-center gap-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+        </svg>
+        Docker Deployment
+      </h2>
+      <p class="text-muted-foreground mb-4">For containerized environments</p>
+      <div class="relative">
+        <pre class="language-dockerfile"><code class="language-dockerfile">FROM mcr.microsoft.com/dotnet/sdk:10.0-preview-alpine
+WORKDIR /app
+COPY mcp-server.cs .
+ENTRYPOINT ["dotnet", "run", "mcp-server.cs"]</code></pre>
+        <button onclick="copyText(`FROM mcr.microsoft.com/dotnet/sdk:10.0-preview-alpine
+WORKDIR /app
+COPY mcp-server.cs .
+ENTRYPOINT [\"dotnet\", \"run\", \"mcp-server.cs\"]`)" class="absolute top-2 right-2 inline-flex items-center px-3 py-1.5 text-xs font-medium bg-slate-700 text-slate-100 rounded hover:bg-slate-600 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Quick Start -->
+    <div class="bg-card border border-border rounded-lg p-6">
+      <h2 class="text-xl font-semibold mb-3">Quick Start</h2>
+      <p class="text-muted-foreground mb-4">Get up and running in 3 steps</p>
+      <ol class="space-y-3 text-slate-700">
+        <li class="flex gap-3">
+          <span class="flex-shrink-0 w-6 h-6 bg-cyan-800 text-white rounded-full flex items-center justify-center text-sm font-bold">
+            1
+          </span>
+          <span>Copy a .cs file from the catalog</span>
+        </li>
+        <li class="flex gap-3">
+          <span class="flex-shrink-0 w-6 h-6 bg-cyan-800 text-white rounded-full flex items-center justify-center text-sm font-bold">
+            2
+          </span>
+          <span>Create .mcp.json with the configuration above</span>
+        </li>
+        <li class="flex gap-3">
+          <span class="flex-shrink-0 w-6 h-6 bg-cyan-800 text-white rounded-full flex items-center justify-center text-sm font-bold">
+            3
+          </span>
+          <span>Restart your LLM client and start using the tools</span>
+        </li>
+      </ol>
+    </div>
+  </div>
+</div>
+
+{% include "footer.njk" %}
+
+{% include "copy-text.njk" %}

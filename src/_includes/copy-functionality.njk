@@ -1,0 +1,112 @@
+<script>
+// Copy code functionality for small buttons (cards, small copy buttons)
+window.copyServerCode = function(serverId, buttonElement) {
+  const serverData = {{ servers | dump | safe }};
+  const server = serverData[serverId];
+  
+  if (server && server.displayCode) {
+    navigator.clipboard.writeText(server.displayCode).then(function() {
+      const button = buttonElement || event.target.closest('button');
+      if (!button) return;
+      
+      const originalContent = button.innerHTML;
+      const originalClasses = button.className;
+      
+      button.innerHTML = `
+        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+        Copied!
+      `;
+      
+      // Just add green background without changing anything else
+      button.style.backgroundColor = '#16a34a';
+      button.style.color = 'white';
+      button.style.borderColor = '#16a34a';
+      
+      setTimeout(() => {
+        button.innerHTML = originalContent;
+        button.style.backgroundColor = '';
+        button.style.color = '';
+        button.style.borderColor = '';
+      }, 2000);
+    }).catch(function(err) {
+      console.error('Failed to copy: ', err);
+    });
+  }
+};
+
+// Copy code functionality for large buttons (server page main copy button)
+window.copyServerCodeLarge = function(serverId, buttonElement) {
+  const serverData = {{ servers | dump | safe }};
+  const server = serverData[serverId];
+  
+  if (server && server.displayCode) {
+    navigator.clipboard.writeText(server.displayCode).then(function() {
+      const button = buttonElement || event.target.closest('button');
+      if (!button) return;
+      
+      const originalContent = button.innerHTML;
+      const originalClasses = button.className;
+      
+      button.innerHTML = `
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+        Copied!
+      `;
+      
+      button.className = originalClasses
+        .replace(/bg-\w+(-\w+)?/g, 'bg-green-600')
+        .replace(/hover:bg-\w+(-\w+)?/g, 'hover:bg-green-700')
+        .replace(/text-\w+(-\w+)?/g, 'text-white');
+      
+      setTimeout(() => {
+        button.innerHTML = originalContent;
+        button.className = originalClasses;
+      }, 2000);
+    }).catch(function(err) {
+      console.error('Failed to copy: ', err);
+    });
+  }
+};
+
+// Download server file functionality
+window.downloadServerFile = function(filename, content) {
+  const serverData = {{ servers | dump | safe }};
+  const serverId = filename.replace('.cs', '');
+  const server = serverData[serverId];
+  
+  if (server && server.displayCode) {
+    const blob = new Blob([server.displayCode], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+    
+    // Enhanced feedback with button state
+    const button = event.target.closest('button');
+    const originalText = button.innerHTML;
+    const originalClasses = button.className;
+    
+    // Change button to success state
+    button.innerHTML = `
+      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+      </svg>
+      Downloaded!
+    `;
+    button.className = 'inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors';
+    
+    // Restore button after 2 seconds
+    setTimeout(() => {
+      button.innerHTML = originalText;
+      button.className = originalClasses;
+    }, 2000);
+  }
+};
+</script>

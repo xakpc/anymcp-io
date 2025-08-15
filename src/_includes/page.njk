@@ -1,0 +1,59 @@
+---
+layout: base.njk
+---
+
+<div class="min-h-screen bg-background">
+  <!-- Header -->
+  <header class="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
+    <div class="container mx-auto px-4 py-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <div class="flex items-center gap-3">
+            <a href="/" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
+              <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-primary-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"></path>
+                </svg>
+              </div>
+              <div>
+                <h1 class="text-xl font-bold text-foreground">{{ site.title.split(' - ')[0] }}</h1>
+              </div>
+            </a>
+          </div>
+          {% if showBadges %}
+          <div class="flex gap-2 ml-6 items-center">
+            {% for badge in site.badges %}
+            <span class="inline-flex items-center px-2.5 text-xs font-medium h-[28px] border 
+              {% if badge.variant == 'primary' %}bg-primary/10 text-primary border-primary/20{% endif %}
+              {% if badge.variant == 'accent' %}bg-accent/10 text-accent border-accent/20{% endif %}" style="border-radius: 3px;">
+              {{ badge.text }}
+            </span>
+            {% endfor %}
+            <div class="pt-2">
+              <a class="github-button" data-size="large" href="https://github.com/xakpc/anymcp-io" data-icon="octicon-star" data-show-count="true" aria-label="Star xakpc/anymcp-io on GitHub">Star</a>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+        {% if showNavigation %}
+        <div class="flex items-center gap-2">
+          <a href="/setup/" class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-foreground bg-transparent border border-border rounded-md hover:bg-accent hover:text-accent-foreground transition-colors">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253z"></path>
+            </svg>
+            Setup
+          </a>
+          <a href="{{ site.github }}/blob/main/src/_data/mcp/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer" class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-primary-foreground bg-primary rounded-md hover:bg-primary/90 transition-colors">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+            </svg>
+            Submit
+          </a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+
+  {{ content | safe }}
+</div>

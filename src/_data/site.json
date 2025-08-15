@@ -1,0 +1,18 @@
+{
+  "title": "AnyMCP - One-file MCP servers for .NET 10",
+  "description": "Copy → Run. A catalog of single-file MCP servers for .NET 10 Preview 4. Works with any LLM.",
+  "url": "https://anymcp.io",
+  "author": "AnyMCP Team",
+  "github": "https://github.com/anymcp/catalog",
+  "version": ".NET 10 Preview 4",
+  "badges": [
+    {
+      "text": ".NET 10 Preview 4",
+      "variant": "primary"
+    },
+    {
+      "text": "One-File",
+      "variant": "primary" 
+    }
+  ]
+}
