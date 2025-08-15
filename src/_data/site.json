@@ -3,7 +3,7 @@
   "description": "Copy → Run. A catalog of single-file MCP servers for .NET 10 Preview 4. Works with any LLM.",
   "url": "https://anymcp.io",
   "author": "AnyMCP Team",
-  "github": "https://github.com/anymcp/catalog",
+  "github": "https://github.com/xakpc/anymcp-io",
   "version": ".NET 10 Preview 4",
   "badges": [
     {
