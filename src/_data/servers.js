@@ -81,6 +81,9 @@ function parseCSharpMcpServer(contents, filePath) {
   // Extract code without front matter
   const codeWithoutFrontMatter = extractCodeWithoutFrontMatter(contents);
   
+  // Extract tools from the C# code
+  const tools = extractToolsFromCSharp(contents);
+  
   // Build server object
   const server = {
     id: metadata.id || filename,
@@ -96,11 +99,48 @@ function parseCSharpMcpServer(contents, filePath) {
     license: metadata.license || 'MIT',
     createdDate: metadata.createdDate || metadata.lastUpdated || new Date().toISOString().split('T')[0],
     envVars: metadata.envVars || [],
+    tools: tools,
     code: contents,
     displayCode: codeWithoutFrontMatter
   };
   
   return server;
+}
+
+function extractToolsFromCSharp(contents) {
+  const tools = [];
+  const lines = contents.split('\n');
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    
+    // Look for McpServerTool attribute with Description
+    if (line.includes('[McpServerTool') && line.includes('Description(')) {
+      const descriptionMatch = line.match(/Description\("([^"]+)"\)/);
+      if (descriptionMatch) {
+        const description = descriptionMatch[1];
+        
+        // Look for the method signature in the next few lines
+        for (let j = i + 1; j < Math.min(i + 10, lines.length); j++) {
+          const methodLine = lines[j].trim();
+          if (methodLine.includes('public static') && methodLine.includes('(')) {
+            // Extract method name
+            const methodMatch = methodLine.match(/public static\s+\w+\s+(\w+)\s*\(/);
+            if (methodMatch) {
+              const methodName = methodMatch[1];
+              tools.push({
+                name: methodName,
+                description: description
+              });
+              break;
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  return tools;
 }
 
 function extractCodeWithoutFrontMatter(contents) {
