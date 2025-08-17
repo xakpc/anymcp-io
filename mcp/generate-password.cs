@@ -4,7 +4,7 @@
 // tags:
 //     - password
 //     - security
-//     - generator
+//     - utilities
 // version: 1.1.0
 // author: XAKPC Dev Labs
 // license: MIT
@@ -35,12 +35,20 @@ await builder.Build().RunAsync();
 
 //====== TOOLS ======
 
+public record GeneratePasswordResult(string Password);
+
 [McpServerToolType]
-public static class TextTools
+public static class PasswordTools
 {
     [McpServerTool, Description("Generates a password with specified length and complexity")]
-    public static string GeneratePassword(int length = 12, bool includeSymbols = true, bool includeNumbers = true)
+    public static GeneratePasswordResult GeneratePassword(
+        [Description("Password length (default: 12)")] int length = 12, 
+        [Description("Include symbols (default: true)")] bool includeSymbols = true, 
+        [Description("Include numbers (default: true)")] bool includeNumbers = true)
     {
+        if (length < 4 || length > 256)
+            throw new ArgumentException("Password length must be between 4 and 256 characters");
+            
         const string letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
         const string numbers = "0123456789";
         const string symbols = "!@#$%^&*()_+-=[]{}|;:,.<>?";
@@ -49,7 +57,9 @@ public static class TextTools
         if (includeNumbers) chars += numbers;
         if (includeSymbols) chars += symbols;
 
-        return new string(Enumerable.Repeat(chars, length)
+        var password = new string(Enumerable.Repeat(chars, length)
             .Select(s => s[Random.Shared.Next(s.Length)]).ToArray());
+            
+        return new GeneratePasswordResult(password);
     }
 }

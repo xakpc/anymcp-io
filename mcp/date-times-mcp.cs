@@ -36,25 +36,37 @@ builder.Services
 await builder.Build().RunAsync();
 
 //====== TOOLS ======
+
+public record CurrentDateTimeResult(string FormattedDateTime);
+public record DateDifferenceResult(int Days, int Hours, int Minutes);
+public record AddTimeResult(DateTime ResultDate);
+
 [McpServerToolType] 
 public static class DateTimeTools
 {
     [McpServerTool, Description("Gets current date and time in various formats")]
-    public static string GetCurrentDateTime(string format = "yyyy-MM-dd HH:mm:ss")
+    public static CurrentDateTimeResult GetCurrentDateTime(
+        [Description("Date format string (default: yyyy-MM-dd HH:mm:ss)")] string format = "yyyy-MM-dd HH:mm:ss")
     {
-        return DateTime.Now.ToString(format);
+        return new CurrentDateTimeResult(DateTime.Now.ToString(format));
     }
 
     [McpServerTool, Description("Calculates the difference between two dates")]
-    public static (int days, int hours, int minutes) DateDifference(DateTime startDate, DateTime endDate)
+    public static DateDifferenceResult DateDifference(
+        [Description("Start date")] DateTime startDate, 
+        [Description("End date")] DateTime endDate)
     {
         var diff = endDate - startDate;
-        return (diff.Days, diff.Hours, diff.Minutes);
+        return new DateDifferenceResult(diff.Days, diff.Hours, diff.Minutes);
     }
 
     [McpServerTool, Description("Adds or subtracts time from a date")]
-    public static DateTime AddTime(DateTime date, int days = 0, int hours = 0, int minutes = 0)
+    public static AddTimeResult AddTime(
+        [Description("Base date")] DateTime date, 
+        [Description("Days to add")] int days = 0, 
+        [Description("Hours to add")] int hours = 0, 
+        [Description("Minutes to add")] int minutes = 0)
     {
-        return date.AddDays(days).AddHours(hours).AddMinutes(minutes);
+        return new AddTimeResult(date.AddDays(days).AddHours(hours).AddMinutes(minutes));
     }
 }
