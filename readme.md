@@ -1,6 +1,6 @@
 # AnyMCP - MCP Server Catalog
 
-A static site catalog of single-file MCP (Model Context Protocol) servers for .NET 10 Preview 4. This site works with any LLM that supports local MCP connections.
+A static site catalog of single-file MCP (Model Context Protocol) servers for .NET 10 (Preview 4+). This site works with any LLM that supports local MCP connections.
 
 ## Features
 
