@@ -1,8 +1,46 @@
 # AnyMCP - MCP Server Catalog
 
-A static site catalog of single-file MCP (Model Context Protocol) servers for .NET 10 (Preview 4+). This site works with any LLM that supports local MCP connections.
+A static site catalog of single-file MCP (Model Context Protocol) servers for .NET 10 (Preview 4+). These servers written with C# and works with any LLM that supports local MCP connections.
 
-## Features
+## Contributing
+
+Want to add your MCP server to the catalog? See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed instructions.
+
+
+## Adding New Servers
+
+Create a `.cs` file in the `mcp/` directory with YAML front matter in comments:
+
+```csharp
+// ---
+// id: my-server
+// name: my-server.cs
+// description: What this server does
+// tags:
+//     - category
+//     - integration
+// version: 1.0.0
+// author: Your Name
+// license: MIT
+// envVars:
+//     - API_KEY
+//     - BASE_URL
+// ---
+#:package Microsoft.Extensions.Hosting@9.0.8
+#:package ModelContextProtocol@0.3.0-preview.3
+
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using ModelContextProtocol.Server;
+using System.ComponentModel;
+
+// Your MCP server code here...
+```
+
+The site automatically discovers C# files and generates individual pages for each server.
+
+## Catalogue Features
 
 - **Static Site Generation**: Built with [Eleventy (11ty)](https://www.11ty.dev/)
 - **Modern Design**: Responsive design with Tailwind CSS
@@ -10,7 +48,7 @@ A static site catalog of single-file MCP (Model Context Protocol) servers for .N
 - **Individual Server Pages**: Detailed pages with code, documentation, and setup instructions
 - **Setup Guide**: Step-by-step instructions for getting started
 
-## Development
+## Catalogue Development
 
 ```bash
 # Install dependencies
@@ -45,40 +83,3 @@ src/
 ├── servers.njk         # Server detail pages (paginated)
 └── setup.njk          # Setup guide page
 ```
-
-## Contributing
-
-Want to add your MCP server to the catalog? See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed instructions.
-
-## Adding New Servers
-
-Create a `.cs` file in the `mcp/` directory with YAML front matter in comments:
-
-```csharp
-// ---
-// id: my-server
-// name: my-server.cs
-// description: What this server does
-// tags:
-//     - category
-//     - integration
-// version: 1.0.0
-// author: Your Name
-// license: MIT
-// envVars:
-//     - API_KEY
-//     - BASE_URL
-// ---
-#:package Microsoft.Extensions.Hosting@9.0.8
-#:package ModelContextProtocol@0.3.0-preview.3
-
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using ModelContextProtocol.Server;
-using System.ComponentModel;
-
-// Your MCP server code here...
-```
-
-The site automatically discovers C# files and generates individual pages for each server.
