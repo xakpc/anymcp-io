@@ -13,6 +13,7 @@
 // ---
 #:package Microsoft.Extensions.Hosting@9.0.8
 #:package ModelContextProtocol@0.3.0-preview.3
+#:property PublishAot=false // disable AOT because apparently it enabled by default and WithToolsFromAssembly uses reflection
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
