@@ -1,0 +1,24 @@
+{
+  "mcpServers": {
+    "generate-password": {
+      "type": "stdio",
+      "command": "dotnet",
+      "args": ["run", ".\\mcp\\generate-password.cs"]
+    },
+    "date-time": {
+      "type": "stdio",
+      "command": "dotnet",
+      "args": ["run", ".\\mcp\\date-times-mcp.cs"]
+    },
+    "image-tools": {
+      "type": "stdio",
+      "command": "dotnet",
+      "args": ["run", ".\\mcp\\image-utility.cs", "-v q"]
+    },
+    "text-format-tools": {
+      "type": "stdio",
+      "command": "dotnet",
+      "args": ["run", ".\\mcp\\text-format-tools.cs", "-v q"] 
+    }
+  }
+}

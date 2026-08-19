@@ -3,3 +3,6 @@ node_modules/
 
 _site
 .claude
+
+# Lode session scraps
+.lode/tmp/
