@@ -22,8 +22,8 @@ Follow these steps to add a server to the catalog.
 // author: Your Name
 // license: MIT
 // ---
-#:package Microsoft.Extensions.Hosting@9.0.8
-#:package ModelContextProtocol@0.3.0-preview.3
+#:package Microsoft.Extensions.Hosting@10.0.11
+#:package ModelContextProtocol@2.2.0
 #:property PublishAot=false
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -94,10 +94,35 @@ the client. `.mcp.json` is not in git, and it does not list every server. Add yo
 ## Package versions in the catalog now
 
 ```csharp
-#:package Microsoft.Extensions.Hosting@9.0.8
-#:package ModelContextProtocol@0.3.0-preview.3
+#:package Microsoft.Extensions.Hosting@10.0.11
+#:package ModelContextProtocol@2.2.0
 ```
 
 Use these same versions for a new server, or the catalog becomes inconsistent.
+
+## Test a server without an LLM client
+
+Send three JSON-RPC lines to the server on standard input. Each line is one message. This shows the
+tool list, and it needs no LLM client:
+
+```bash
+printf '%s\n%s\n%s\n' \
+ '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"t","version":"1"}}}' \
+ '{"jsonrpc":"2.0","method":"notifications/initialized"}' \
+ '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}' > in.jsonl
+
+{ cat in.jsonl; sleep 6; } | dotnet run mcp/my-server.cs 2>/dev/null
+```
+
+To call one tool, add a fourth line:
+
+```json
+{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"my_tool","arguments":{"a":1}}}
+```
+
+The `sleep` is necessary. When standard input reaches end of file, the host shuts down at once, and the
+replies can be lost before the process writes them. Without the `sleep` the output is empty, and the
+server looks broken when it is correct. Read stderr to see the true cause of a failed tool call: the
+reply on stdout only says `An error occurred invoking '<tool>'`, but stderr holds the full exception.
 
 Related: [Server inventory](server-inventory.md), [Practices](../practices.md).

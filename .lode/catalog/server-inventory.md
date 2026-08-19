@@ -1,7 +1,9 @@
 # Server Inventory
 
-Five servers are in `mcp/` now. All use `Microsoft.Extensions.Hosting@9.0.8` and
-`ModelContextProtocol@0.3.0-preview.3`, and all set `PublishAot=false`.
+Five servers are in `mcp/` now. All use `Microsoft.Extensions.Hosting@10.0.11` and
+`ModelContextProtocol@2.2.0`, and all set `PublishAot=false`. Two servers add one more package:
+`image-utility` uses `SixLabors.ImageSharp@3.1.12`, and `text-format-tools` uses
+`Slugify.Core@5.1.1`.
 
 | id | Purpose | Tags | Author | Env vars |
 |---|---|---|---|---|
@@ -19,5 +21,11 @@ Notes:
   `stable` from the parser default.
 - Only `xquik` declares a `name` field. The other four get the name from the file name.
 - `.mcp.json` lists four servers, and does not list `xquik`.
+- `image-utility` stays on the ImageSharp 3.x line on purpose. ImageSharp 4.x makes a build warning on
+  each build when it finds no Six Labors license key. A warning breaks the copy-and-run promise of the
+  catalog. Move to 4.x only if the project gets a license.
+- `image-utility` keeps all file paths in one root directory. `ImageUtils.ConfiguredRoot` holds this
+  root, and its value is the current directory. `ImageUtils.NormalizePath` refuses a path outside the
+  root with an `UnauthorizedAccessException`.
 
 Related: [Server authoring](mcp-server-authoring.md), [Front matter schema](front-matter-schema.md).

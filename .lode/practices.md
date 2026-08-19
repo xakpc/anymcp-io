@@ -30,6 +30,17 @@ Add this line to each server:
 reflection to find the tools. AOT removes the metadata that reflection needs, and the server then
 exposes no tools.
 
+## Pin one exact version of each package
+
+Write an exact version in each `#:package` directive, for example `@2.2.0`. Do not write a range and do
+not omit the version. A user copies the file and runs it months later, and the same versions must
+resolve. Keep the version equal in all servers that use the same package. Prefer a stable release to a
+preview or a prerelease.
+
+Prefer a package that builds without a warning. A build warning breaks the copy-and-run promise, because
+the user sees it on the first run. This is why `image-utility` stays on ImageSharp 3.x. See
+[server inventory](catalog/server-inventory.md).
+
 ## Send all logs to stderr
 
 Stdio transport uses standard output for protocol messages. A log line on standard output damages the

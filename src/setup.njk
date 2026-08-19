@@ -29,7 +29,7 @@ showNavigation: false
 
       <div class="flex flex-wrap gap-2">
         <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-cyan-100 text-cyan-800">
-          .NET 10 Preview 4
+          .NET 10
         </span>
         <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
           Any LLM
@@ -50,7 +50,7 @@ showNavigation: false
       </h2>
       <p class="text-muted-foreground mb-4">What you need before getting started</p>
       <ul class="space-y-2 text-slate-700">
-        <li>• .NET 10 Preview 4 installed</li>
+        <li>• .NET 10 installed</li>
         <li>• An LLM client that supports MCP (Visual Studio, Claude Desktop, etc.)</li>
         <li>• A single .cs file from the catalog</li>
       </ul>
@@ -217,11 +217,11 @@ public static class EnvironmentExamples
       </h2>
       <p class="text-muted-foreground mb-4">For containerized environments</p>
       <div class="relative">
-        <pre class="language-dockerfile"><code class="language-dockerfile">FROM mcr.microsoft.com/dotnet/sdk:10.0-preview-alpine
+        <pre class="language-dockerfile"><code class="language-dockerfile">FROM mcr.microsoft.com/dotnet/sdk:10.0-alpine
 WORKDIR /app
 COPY mcp-server.cs .
 ENTRYPOINT ["dotnet", "run", "mcp-server.cs"]</code></pre>
-        <button onclick="copyText(`FROM mcr.microsoft.com/dotnet/sdk:10.0-preview-alpine
+        <button onclick="copyText(`FROM mcr.microsoft.com/dotnet/sdk:10.0-alpine
 WORKDIR /app
 COPY mcp-server.cs .
 ENTRYPOINT [\"dotnet\", \"run\", \"mcp-server.cs\"]`)" class="absolute top-2 right-2 inline-flex items-center px-3 py-1.5 text-xs font-medium bg-slate-700 text-slate-100 rounded hover:bg-slate-600 transition-colors">

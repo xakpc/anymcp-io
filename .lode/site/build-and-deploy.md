@@ -48,9 +48,9 @@ Note: `src/assets/` is empty at present. The passthrough rule is ready for futur
 
 | Package | Use |
 |---|---|
-| `@11ty/eleventy` ^3.1.2 | static site generator |
-| `yaml` ^2.8.1 | parses the front matter in `servers.js` |
-| `wrangler` ^3.0.0 (dev) | Cloudflare Pages deployment |
+| `@11ty/eleventy` ^3.1.6 | static site generator |
+| `yaml` ^2.9.0 | parses the front matter in `servers.js` |
+| `wrangler` ^4.124.0 (dev) | Cloudflare Pages deployment |
 
 ## Hosting
 

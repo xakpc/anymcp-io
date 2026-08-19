@@ -65,7 +65,7 @@ not appear on the page or in the clipboard.
 
 ## setup.njk
 
-`setup.njk` is a static guide. It explains how to install .NET 10 Preview 4, how to save a server file,
+`setup.njk` is a static guide. It explains how to install .NET 10, how to save a server file,
 and how to configure the LLM client. It uses `copy-text.njk` for its command examples.
 
 ## Shared components

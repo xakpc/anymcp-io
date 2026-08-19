@@ -44,8 +44,8 @@ Your `.cs` file must include YAML front matter in C# comments, followed by your 
 //     - API_KEY
 //     - BASE_URL
 // ---
-#:package Microsoft.Extensions.Hosting@9.0.8
-#:package ModelContextProtocol@0.3.0-preview.3
+#:package Microsoft.Extensions.Hosting@10.0.11
+#:package ModelContextProtocol@2.2.0
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -123,8 +123,8 @@ Use these standardized tags for consistency:
 ### 5. Code Requirements
 
 #### Dependencies
-- Target **.NET 10 Preview 4** or compatible
-- Use **ModelContextProtocol** package version 0.3.0-preview.3 or later
+- Target **.NET 10** or compatible
+- Use **ModelContextProtocol** package version 2.2.0 or later
 - Include package references with `#:package` directives
 
 #### Best Practices
@@ -137,8 +137,8 @@ Use these standardized tags for consistency:
 #### Example Implementation Structure
 
 ```csharp
-#:package Microsoft.Extensions.Hosting@9.0.8
-#:package ModelContextProtocol@0.3.0-preview.3
+#:package Microsoft.Extensions.Hosting@10.0.11
+#:package ModelContextProtocol@2.2.0
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -211,7 +211,7 @@ Adds a new MCP server for fetching weather data from OpenWeatherMap API.
 
 ## Requirements
 - OpenWeatherMap API key (OPENWEATHER_API_KEY)
-- .NET 10 Preview 4
+- .NET 10
 ```
 
 ## Code of Conduct

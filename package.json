@@ -8,7 +8,7 @@
     "debug": "DEBUG=Eleventy* eleventy",
     "deploy": "npm run build && wrangler pages deploy _site"
   },
-  "description": "A catalog of single-file MCP servers for .NET 10 Preview 4. Works with any LLM that supports local connections.",
+  "description": "A catalog of single-file MCP servers for .NET 10. Works with any LLM that supports local connections.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/xakpc/anymcp-io.git"
@@ -28,10 +28,10 @@
   },
   "homepage": "https://github.com/xakpc/anymcp-io#readme",
   "dependencies": {
-    "@11ty/eleventy": "^3.1.2",
-    "yaml": "^2.8.1"
+    "@11ty/eleventy": "^3.1.6",
+    "yaml": "^2.9.0"
   },
   "devDependencies": {
-    "wrangler": "^3.0.0"
+    "wrangler": "^4.124.0"
   }
 }

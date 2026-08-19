@@ -8,16 +8,15 @@
 // author: XAKPC Dev Labs
 // license: MIT
 // ---
-#:package Microsoft.Extensions.Hosting@9.0.8
-#:package ModelContextProtocol@0.3.0-preview.3
-#:package Slugify.Core@4.0.1
-#:property PublishAot=false // disable AOT because apparently it enabled by default and WithToolsFromAssembly uses reflection    
+#:package Microsoft.Extensions.Hosting@10.0.11
+#:package ModelContextProtocol@2.2.0
+#:package Slugify.Core@5.1.1
+#:property PublishAot=false
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Server;
 using System.ComponentModel;
-using ModelContextProtocol.Server;
 using Slugify;
 using System.Globalization;
 using System.Security.Cryptography;
