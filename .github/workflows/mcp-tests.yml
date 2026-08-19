@@ -1,0 +1,147 @@
+name: MCP catalog tests
+
+# The catalog grows, so the cost of this workflow must not grow with it.
+# The lint job always covers the whole catalog and costs a few seconds. The expensive
+# .NET jobs run one server each, in a matrix that the prepare job builds at run time.
+# A pull request therefore compiles only the servers that it changes.
+
+on:
+  pull_request:
+    paths:
+      - 'mcp/**'
+      - 'test/**'
+      - 'scripts/**'
+      - 'src/_data/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/mcp-tests.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'mcp/**'
+      - 'test/**'
+      - 'scripts/**'
+      - 'src/_data/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/mcp-tests.yml'
+  workflow_dispatch:
+    inputs:
+      servers:
+        description: 'Comma separated server ids. Leave blank to test every server.'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mcp-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: lint the catalog
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      # Always the whole catalog. The id and package version tests are relational,
+      # so a subset cannot show a conflict.
+      - run: npm run test:lint
+
+  prepare:
+    name: choose the servers to run
+    needs: lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      matrix: ${{ steps.choose.outputs.matrix }}
+      count: ${{ steps.choose.outputs.count }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The diff below needs the base commit.
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+
+      # scripts/ci-matrix.js holds the choice, so that it can be tested on a
+      # developer machine. It always filters against the catalog that exists now,
+      # so a deleted server gives an empty matrix instead of a leg that cannot run.
+      - name: choose
+        id: choose
+        env:
+          EVENT: ${{ github.event_name }}
+          INPUT_SERVERS: ${{ github.event.inputs.servers }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+
+          if [ "$EVENT" = "workflow_dispatch" ] && [ -n "$INPUT_SERVERS" ]; then
+            matrix=$(node scripts/ci-matrix.js --only "$INPUT_SERVERS")
+          elif [ "$EVENT" = "pull_request" ]; then
+            echo "changed files:"
+            git diff --name-only "$BASE_SHA"...HEAD | sed 's/^/  /'
+            matrix=$(git diff --name-only "$BASE_SHA"...HEAD | node scripts/ci-matrix.js --changed)
+          else
+            matrix=$(node scripts/ci-matrix.js --all)
+          fi
+
+          count=$(node -e 'process.stdout.write(String(JSON.parse(process.argv[1]).length))' "$matrix")
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+          echo "count=$count" >> "$GITHUB_OUTPUT"
+          echo "will run $count server(s): $matrix"
+
+  server:
+    name: ${{ matrix.server }}
+    needs: prepare
+    # An empty matrix must skip the job, and not fail it. This happens when a pull
+    # request only deletes a server file.
+    if: needs.prepare.outputs.count != '0'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      # Report every broken server, and not only the first one.
+      fail-fast: false
+      # Keep a large catalog from taking every runner in the account.
+      max-parallel: 6
+      matrix:
+        server: ${{ fromJson(needs.prepare.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('mcp/**/*.cs') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-
+
+      # The build warms the artifact cache, so the protocol layer starts fast.
+      - name: build
+        run: npm run test:build -- --server "${{ matrix.server }}" --jobs 1
+
+      # No secret is set here on purpose. A catalog server must list its tools with
+      # an empty environment, which is what a user gets after pasting the file, and
+      # what lets a fork pull request be gated safely.
+      - name: protocol
+        run: npm run test:protocol -- --server "${{ matrix.server }}" --jobs 1

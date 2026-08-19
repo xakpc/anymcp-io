@@ -5,9 +5,12 @@ Follow these steps to add a server to the catalog.
 1. Make a file `mcp/my-server.cs`.
 2. Add the front matter. See [front matter schema](front-matter-schema.md).
 3. Write the server code below the front matter.
-4. Run `npm run serve`, and open http://localhost:8080/servers/my-server/.
-5. Test the server with a real LLM client through `.mcp.json`.
-6. Send a pull request.
+4. Run `npm test -- --server my-server`. The harness finds the new file by itself, so no
+   test file, workflow, or configuration needs a change. See
+   [automated testing](automated-testing.md).
+5. Run `npm run serve`, and open http://localhost:8080/servers/my-server/.
+6. Test the server with a real LLM client through `.mcp.json`.
+7. Send a pull request. The same three test layers run in GitHub Actions.
 
 ## The standard skeleton
 
@@ -102,8 +105,12 @@ Use these same versions for a new server, or the catalog becomes inconsistent.
 
 ## Test a server without an LLM client
 
-Send three JSON-RPC lines to the server on standard input. Each line is one message. This shows the
-tool list, and it needs no LLM client:
+`npm run test:protocol -- --server my-server` does this automatically, and is the normal way. See
+[automated testing](automated-testing.md).
+
+The manual recipe below stays useful to debug one server by hand, for example to see the raw bytes, or
+to call a tool with your own arguments. Send three JSON-RPC lines to the server on standard input.
+Each line is one message:
 
 ```bash
 printf '%s\n%s\n%s\n' \
@@ -125,4 +132,8 @@ replies can be lost before the process writes them. Without the `sleep` the outp
 server looks broken when it is correct. Read stderr to see the true cause of a failed tool call: the
 reply on stdout only says `An error occurred invoking '<tool>'`, but stderr holds the full exception.
 
-Related: [Server inventory](server-inventory.md), [Practices](../practices.md).
+The tool name on the wire is not the C# method name. The SDK converts `GeneratePassword` to
+`generate_password`. The catalog page shows the C# name.
+
+Related: [Server inventory](server-inventory.md), [Automated testing](automated-testing.md),
+[Practices](../practices.md).

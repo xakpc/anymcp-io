@@ -6,7 +6,12 @@
     "serve": "eleventy --serve",
     "start": "eleventy --serve",
     "debug": "DEBUG=Eleventy* eleventy",
-    "deploy": "npm run build && wrangler pages deploy _site"
+    "deploy": "npm run build && wrangler pages deploy _site",
+    "test": "node scripts/run-tests.js",
+    "test:lint": "node scripts/run-tests.js --layer lint",
+    "test:build": "node scripts/run-tests.js --layer build",
+    "test:protocol": "node scripts/run-tests.js --layer protocol",
+    "test:list": "node scripts/run-tests.js --list"
   },
   "description": "A catalog of single-file MCP servers for .NET 10. Works with any LLM that supports local connections.",
   "repository": {

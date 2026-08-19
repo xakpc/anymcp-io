@@ -73,3 +73,16 @@ behavior when you change the parser. See [data pipeline](site/data-pipeline.md).
 
 Run `npm run serve`, and open http://localhost:8080/. Check the home page, the search box, and the
 detail page of the server that you changed.
+
+## A server enters the catalog only after `npm test` passes
+
+The harness lints the metadata, compiles the file, and starts the server to read its tool list. It
+finds a new file by itself, so adding a server needs no change to a test file. See
+[automated testing](catalog/automated-testing.md).
+
+## A server must list its tools with no secret set
+
+The test harness removes every declared `envVars` name from the environment before it starts a server.
+A user pastes the file and runs it before they set any key, and the client must still show the tools. A
+key is needed only when the LLM calls the tool. This rule also lets a pull request from a fork run the
+full harness, because CI gives it no secret.

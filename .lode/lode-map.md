@@ -21,6 +21,7 @@ The index of all lode files. Read this file first.
 │   ├── summary.md                    domain overview
 │   ├── front-matter-schema.md        metadata fields, defaults, and rules
 │   ├── mcp-server-authoring.md       how to write and test a new server
+│   ├── automated-testing.md          the test harness and the CI workflow
 │   └── server-inventory.md           the servers that exist now
 └── tmp/                              session scraps. Git ignores this directory.
 ```
@@ -35,6 +36,7 @@ The index of all lode files. Read this file first.
 | How do I add a server to the catalog? | [catalog/mcp-server-authoring.md](catalog/mcp-server-authoring.md) |
 | Which metadata fields exist? | [catalog/front-matter-schema.md](catalog/front-matter-schema.md) |
 | Which servers exist now? | [catalog/server-inventory.md](catalog/server-inventory.md) |
+| How do the tests work? | [catalog/automated-testing.md](catalog/automated-testing.md) |
 | How does a `.cs` file become a web page? | [site/data-pipeline.md](site/data-pipeline.md) |
 | Which template must I change? | [site/templates-and-layouts.md](site/templates-and-layouts.md) |
 | How do I change a color or a font? | [site/styling.md](site/styling.md) |
@@ -53,3 +55,4 @@ The index of all lode files. Read this file first.
 | `src/_includes/copy-functionality.njk`, `copy-text.njk` | [site/client-side-behavior.md](site/client-side-behavior.md) |
 | `.eleventy.js`, `package.json`, `wrangler.toml` | [site/build-and-deploy.md](site/build-and-deploy.md) |
 | `.mcp.json` | [catalog/mcp-server-authoring.md](catalog/mcp-server-authoring.md) |
+| `test/*`, `scripts/*`, `.github/workflows/mcp-tests.yml` | [catalog/automated-testing.md](catalog/automated-testing.md) |

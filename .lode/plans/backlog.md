@@ -39,10 +39,13 @@ developer. Use `cross-env`, or delete the script.
 
 ## Empty directories
 
-`scripts/`, `test/`, `src/assets/`, and `.github/workflows/` hold no files. Git does not track an empty
-directory, so they exist only on the local disk. The git history shows earlier CI work
-(`ci: add wrangler setup`, `ci: fix package lock`). Confirm if CI must return.
+`src/assets/` holds no files. Git does not track an empty directory, so it exists only on the local
+disk. Decide if the site needs it.
 
-`.gitignore` also lists `/test-results/`. No test tool writes this directory now.
+`.gitignore` lists `/test-results/`. The test harness writes no file there, and `dotnet build` keeps
+its artifacts in a user level cache, so the line has no use now.
+
+`scripts/`, `test/`, and `.github/workflows/` now hold the test harness. See
+[automated testing](../catalog/automated-testing.md).
 
 Related: [Practices](../practices.md), [Site summary](../site/summary.md).

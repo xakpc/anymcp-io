@@ -174,6 +174,30 @@ public static class SomeTools
 }
 ```
 
+## Testing Your Server
+
+Run the test harness before you open a pull request:
+
+```bash
+npm install
+npm test                                # every server
+npm test -- --server your-server-name   # just yours
+```
+
+It runs three layers, and the same three run in CI on your pull request:
+
+| Layer | What it does |
+| --- | --- |
+| `npm run test:lint` | Checks the front matter, the pinned package versions, `PublishAot=false`, stderr logging, and that the site parser finds every one of your tools. No .NET needed. |
+| `npm run test:build` | `dotnet build` of your file. A compiler warning fails the build, because whoever copies your file sees it on their first run. |
+| `npm run test:protocol` | Starts your server, does the MCP handshake, and reads its tool list. It fails if anything other than JSON-RPC reaches stdout, or if the tool list differs from what the catalog page shows. |
+
+Adding `mcp/your-server.cs` is all you need to do — the harness discovers the file on its own, so
+there is no test file or workflow to edit.
+
+Note that the protocol layer starts your server with **no environment variables set**. Your server
+must start and list its tools without an API key. Read keys only inside the tool method, when it runs.
+
 ## Submission Guidelines
 
 ### Pull Request Process
@@ -181,7 +205,7 @@ public static class SomeTools
 1. **Fork** the repository to your GitHub account
 2. **Create a branch** for your MCP server: `git checkout -b add-your-server-name`
 3. **Add your server file** to the `mcp/` directory
-4. **Test locally** to ensure it works properly
+4. **Test locally** with `npm test -- --server your-server-name`
 5. **Commit your changes**: `git commit -m "Add [Your Server Name] MCP server"`
 6. **Push to your fork**: `git push origin add-your-server-name`
 7. **Create a Pull Request** with a clear description

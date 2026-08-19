@@ -19,3 +19,10 @@
 - `#:package` - A .NET 10 file-level directive. It declares a NuGet package for a single-file program.
 - `#:property` - A .NET 10 file-level directive. It sets an MSBuild property, for example `PublishAot`.
 - `.mcp.json` - The local client configuration file. It tells the LLM client how to start each server.
+- Harness - The test code in `test/`, driven by `scripts/run-tests.js`. See
+  [automated testing](catalog/automated-testing.md).
+- Layer - One stage of the harness: `lint`, `build`, or `protocol`. They run in that order.
+- Stray stdout - A line that a server writes to standard output that is not a JSON-RPC message. One
+  such line breaks the protocol stream, so the protocol layer fails on it.
+- Wire name - The tool name that a client sees. The SDK makes it from the C# method name in snake
+  case, so `GeneratePassword` becomes `generate_password`. The catalog page shows the C# name.
