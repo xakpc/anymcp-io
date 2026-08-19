@@ -9,9 +9,9 @@
 // author: XAKPC Dev Labs
 // license: MIT
 // ---
-#:package Microsoft.Extensions.Hosting@9.0.8
-#:package ModelContextProtocol@0.3.0-preview.3
-#:property PublishAot=false // disable AOT because apparently it enabled by default and WithToolsFromAssembly uses reflection
+#:package Microsoft.Extensions.Hosting@10.0.11
+#:package ModelContextProtocol@2.2.0
+#:property PublishAot=false
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;

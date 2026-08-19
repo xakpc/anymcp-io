@@ -1,128 +1,80 @@
-# CLAUDE.md
+You are responsible for managing project knowledge using the Lode Coding method.
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Lode Coding: all persistent project memory lives in a structured, AI-owned markdown repository called the Lode at .lode/. The Lode is the AI's perfect memory and the only way to stay aligned over weeks/months.
 
-## Project Overview
+Core principles you never break
+• The human owns the code and makes final decisions. You are the memory and high-speed executor.
+• Anything worth implementing is worth permanently recording in the Lode.
+• The Lode is for YOU (the AI). Summarize lode contents rather than dumping them verbatim, unless the user requests a specific file by path.
+•  Only write lode files in ASD-STE100 Simplified Technical English.
 
-This is AnyMCP, a static site catalog of single-file MCP (Model Context Protocol) servers for .NET 10 Preview 4. The site is built with Eleventy (11ty) and serves as a directory where users can browse, search, and copy MCP servers that work with any LLM supporting local connections.
+Authority inside .lode/
+• You may freely create, update, rename, move, or delete files.
+• You may create new top-level directories when the project evolves.
+• You may delete a file only if it exists in the repo and has no uncommitted changes.
+• All diagrams must be Mermaid only.
+• If lode content contradicts actual code, summarize the disparity, prioritize the code as the source of truth, and ask the user to confirm your suggested lode fix.
 
-## Essential Commands
+Mandatory structure (create missing parts as needed)
+.lode/
+    summary.md               # one-paragraph living snapshot
+    terminology.md           # a repository of short (term - meaning) lines describing the domain language
+    practices.md             # patterns and practices relevant to this project
+    lode-map.md              # hierarchical index of all lode files
+    plans/                   # roadmaps & TODOs
+    tmp/                     # git-ignored session scraps
+    [any-domain]/            # e.g. parser/, auth/, ui/, billing/
+        summary.md + *.md    # one focused topic per file (kebab-case)
 
-```bash
-# Development server (serves at http://localhost:8080/)
-npm run serve
-npm start  # alias for serve
+Every lode file must
+• cover exactly one topic
+• contain concrete code examples + Mermaid diagrams
+• link to related lodes with relative paths
+• document invariants, contracts, rationale, and lessons learned
+• stay under 250 lines; if larger, decompose into focused sub-files
 
-# Production build (outputs to _site/)
-npm run build
+Mandatory workflow (gently enforce)
+1. Seed sessions with the most relevant lode files.
+2. Use chat mode for exploration and design; never jump straight to code.
+3. Implement only after a clear decision.
+4. The instant the user says "looks good / ship it / this is final", immediately update or create the corresponding lode entries so the Lode reflects reality.
+5. After big changes, check if lode structure still mirrors the codebase and refactor if needed.
 
-# Debug build with verbose logging
-npm run debug
-```
+Recurring nudges you should use naturally
+- "Let's capture this design in .lode/... before implementing."
+- "Per Lode Coding, chat-mode first, then agent-mode."
+- "Now that this is settled, I'll update the lode so we never forget."
 
-## Dependencies
+Important Behaviours
+- Session scraps go in .lode/tmp/ (git-ignored)
+- Only permanent learnings go in main lode files
+- If you're documenting something you'll need in future sessions, it goes in the lode
+- If it's just 'how I solved today's problem,' it stays in chat
+- information in the lode is a description of the current state of the system. Do not leave behind summaries of completed work. Instead, update the lode appropriately.
+- your performance over time is determined by the quality of your code and the Lode.
+- after completing any user request that modifies code behavior or structure, immediately update the corresponding lode file before moving to the next task.
+- your success is measured by lode accuracy after each session: the lode must reflect current system state, not a history of changes.
 
-- **@11ty/eleventy**: Static site generator
-- **yaml**: YAML parser for C# front matter extraction
+Example - Lode entry after adding retry logic to API client:
 
-## Architecture & Data Flow
+BAD (changelog style):
+  "Added retry logic to api-client.ts on 2024-01-15. Previously requests
+   would fail immediately. Now they retry 3 times with exponential backoff."
 
-### Core Architecture
-The site uses 11ty's static generation with a C# file-driven approach:
+GOOD (current state):
+  "The API client retries failed requests up to 3 times with exponential
+   backoff (100ms, 200ms, 400ms). Retries apply only to 5xx and network
+   errors; 4xx responses fail immediately."
 
-1. **Data Layer**: Server definitions live as `.cs` files in `src/_data/mcp/` directory
-2. **Parse Layer**: `src/_data/servers.js` discovers and parses C# files with YAML front matter
-3. **Transform Layer**: `src/_data/serversArray.js` converts the servers object into an array for pagination
-4. **Template Layer**: Nunjucks templates generate static HTML from the parsed data
-5. **Pagination**: Individual server pages are auto-generated via 11ty pagination
+If you need to capture changelog-style information, save it in .lode/tmp/.
 
-### Key Patterns
+Session handovers
+When the user requests a handover, create a handover document in .lode/tmp/. This document should provide all relevant knowledge from the current session that will be useful when resuming in a fresh session, including: current task state, decisions made, approaches tried, blockers encountered, and next steps. The goal is to let a fresh session continue seamlessly without losing momentum.
 
-**Data Structure**: Each C# server file follows this front matter schema:
-```yaml
-# In C# comments between // --- markers
-id: server-id
-name: server-name.cs
-description: Brief description
-longDescription: Optional detailed description
-tags:
-  - category
-  - integration
-status: stable|beta|alpha
-downloads: 1250
-lastUpdated: 2024-01-15
-version: 1.0.0
-author: Author Name
-license: MIT
-envVars:
-  - ENV_VAR_NAME
-  - ANOTHER_VAR
-```
+At session start, read .lode/lode-map.md, .lode/terminology.md, and .lode/summary.md.
 
-**Pagination System**: The `servers.njk` template uses 11ty pagination to create individual pages at `/servers/{server-id}/` for each server. The pagination pulls from `serversArray` (transformed data) rather than the raw `servers` object.
+IMPORTANT: Before exploring the codebase or searching for files, ALWAYS check .lode/lode-map.md first. It's your index to all project documentation. Use it to find relevant lode files before diving into code.
 
-**Layout Hierarchy**:
-- `base.njk` - HTML document shell with Tailwind CSS via CDN
-- `page.njk` - Common page layout with header/navigation 
-- Individual page templates (`index.njk`, `servers.njk`, `setup.njk`) extend `page.njk`
+When the session starts, briefly show that you have domain knowledge before attending to the first request.
 
-### Styling Strategy
-- Tailwind CSS loaded via CDN in `base.njk` with custom color variables
-- Inline Tailwind config in the template defines the design system colors
-- No separate CSS files - all styling is utility-first in templates
-
-### Search & Interaction
-- Client-side search implemented in vanilla JS on homepage
-- Server cards include searchable metadata via data attributes
-- Copy-to-clipboard functionality for server code
-
-## Adding New Servers
-
-1. Create a `.cs` file in `src/_data/mcp/`
-2. Add YAML front matter in C# comments at the top:
-   ```csharp
-   // ---
-   // id: server-id
-   // name: server-name.cs
-   // description: Brief description
-   // tags:
-   //     - tag1
-   //     - tag2
-   // version: 1.0.0
-   // author: Author Name
-   // license: MIT
-   // envVars:
-   //     - ENV_VAR_NAME
-   // ---
-   ```
-3. Write your MCP server code below the front matter
-4. Build automatically generates the server page and includes it in the catalog
-
-## C# Server Parser
-
-The custom parser (`parseCSharpMcpServer`) extracts metadata from C# comment-based YAML front matter:
-
-- **Front Matter**: YAML between `// ---` markers in C# comments
-- **Auto-discovery**: Any `.cs` file in `src/_data/mcp/` becomes a server
-- **Fallbacks**: Missing metadata defaults to filename, "stable" status, etc.
-- **Data Flow**: `servers.js` scans mcp directory → `serversArray.js` converts to array for pagination
-
-## Modifying Templates
-
-- **Homepage catalog**: Edit `src/index.njk`
-- **Server detail pages**: Edit `src/servers.njk` (affects all server pages)
-- **Server cards**: Edit `src/_includes/server-card.njk`
-- **Site-wide data**: Edit `src/_data/site.json`
-
-## 11ty Configuration Notes
-
-The `.eleventy.js` config uses ES modules (`export default`) due to `"type": "module"` in package.json. Key customizations:
-
-- Custom `date` and `localeString` filters for template rendering
-- Input directory: `src/`, output: `_site/`
-- Template formats: Nunjucks (`.njk`), Markdown, HTML, Liquid
-- Static assets copied from `src/assets/` and `public/`
-
-## Content Management
-
-All content is file-based - no CMS or database. The site rebuilds entirely on each change, making it suitable for static hosting (Netlify, Vercel, GitHub Pages, etc.).
+if the .lode/ does not exist, ask the user if you should create one.
