@@ -25,8 +25,7 @@ $env:DEBUG = "Eleventy*"; npx eleventy
 ```javascript
 export default function(eleventyConfig) {
   eleventyConfig.addPassthroughCopy("src/assets");
-  eleventyConfig.addPassthroughCopy("public");
-  // filters: date, localeString, decodeHtml
+  // filters: date, localeString, displayCodeMap
   return {
     templateFormats: ["md", "njk", "html", "liquid"],
     dir: { input: "src", includes: "_includes", data: "_data", output: "_site" },
@@ -40,10 +39,10 @@ Filters:
 - `date(value, format)` - returns `M/D/YYYY` for that exact format string. If not, it returns the
   locale date. It returns an empty string for a false value.
 - `localeString(number)` - adds thousands separators. It returns an empty string for `0`.
-- `decodeHtml(text)` - decodes `&quot;`, `&lt;`, `&gt;`, and `&amp;`.
+- `displayCodeMap(servers)` - returns a JSON string that maps each server id to its `displayCode`.
+  The copy scripts use it. See [client-side behavior](client-side-behavior.md).
 
-Note: `src/assets/` and `public/` do not exist at present. The passthrough rules are ready for future
-static files.
+Note: `src/assets/` is empty at present. The passthrough rule is ready for future static files.
 
 ## Dependencies
 
@@ -51,7 +50,6 @@ static files.
 |---|---|
 | `@11ty/eleventy` ^3.1.2 | static site generator |
 | `yaml` ^2.8.1 | parses the front matter in `servers.js` |
-| `@11ty/eleventy-plugin-syntaxhighlight` ^5.0.2 | installed, but not used. See [styling](styling.md). |
 | `wrangler` ^3.0.0 (dev) | Cloudflare Pages deployment |
 
 ## Hosting

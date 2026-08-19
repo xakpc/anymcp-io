@@ -3,7 +3,6 @@ export default function(eleventyConfig) {
 
   // Copy static assets
   eleventyConfig.addPassthroughCopy("src/assets");
-  eleventyConfig.addPassthroughCopy("public");
   
   // Add date filter
   eleventyConfig.addFilter("date", function(date, format) {
@@ -21,14 +20,14 @@ export default function(eleventyConfig) {
     return num.toLocaleString();
   });
 
-  // Add filter to decode HTML entities
-  eleventyConfig.addFilter("decodeHtml", function(text) {
-    if (!text) return '';
-    return text
-      .replace(/&quot;/g, '"')
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>')
-      .replace(/&amp;/g, '&');
+  // Map of server id -> displayCode, for the client-side copy and download scripts.
+  // Only displayCode is needed in the browser, so the rest of each server is dropped.
+  eleventyConfig.addFilter("displayCodeMap", function(servers) {
+    const map = {};
+    for (const [id, server] of Object.entries(servers || {})) {
+      map[id] = server.displayCode;
+    }
+    return JSON.stringify(map);
   });
 
   // Set up directory structure

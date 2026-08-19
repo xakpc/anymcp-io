@@ -74,10 +74,4 @@ and how to configure the LLM client. It uses `copy-text.njk` for its command exa
 - `copy-functionality.njk` - copy and download scripts. See [client-side behavior](client-side-behavior.md).
 - `copy-text.njk` - a small `copyText(text)` helper for the setup page.
 
-## Unused components
-
-`server-card.njk` and `toast-system.njk` exist, but no template includes them. `index.njk` holds its
-own copy of the card markup. Treat `server-card.njk` as stale: if you change a card, change
-`index.njk`. See [backlog](../plans/backlog.md).
-
 Related: [Data pipeline](data-pipeline.md), [Styling](styling.md).

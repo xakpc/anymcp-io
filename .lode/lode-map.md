@@ -50,6 +50,6 @@ The index of all lode files. Read this file first.
 | `src/_data/servers.js`, `src/_data/serversArray.js` | [site/data-pipeline.md](site/data-pipeline.md) |
 | `src/*.njk`, `src/_includes/*.njk` | [site/templates-and-layouts.md](site/templates-and-layouts.md) |
 | `src/_includes/base.njk` (theme part) | [site/styling.md](site/styling.md) |
-| `src/_includes/copy-functionality.njk`, `copy-text.njk`, `toast-system.njk` | [site/client-side-behavior.md](site/client-side-behavior.md) |
+| `src/_includes/copy-functionality.njk`, `copy-text.njk` | [site/client-side-behavior.md](site/client-side-behavior.md) |
 | `.eleventy.js`, `package.json`, `wrangler.toml` | [site/build-and-deploy.md](site/build-and-deploy.md) |
 | `.mcp.json` | [catalog/mcp-server-authoring.md](catalog/mcp-server-authoring.md) |

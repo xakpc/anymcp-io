@@ -15,9 +15,29 @@ card.style.display = shouldShow ? '' : 'none';
 The `data-server` attribute holds the name, the description, and the tags of the server. The match is a
 simple substring test. When no card matches, the script hides `#servers-grid`, and shows `#no-results`.
 
+## The shared code map
+
+`src/_includes/copy-functionality.njk` writes one global object at the top of its script:
+
+```javascript
+window.serverCode = {{ servers | displayCodeMap | safe }};
+```
+
+The `displayCodeMap` filter is in `.eleventy.js`. It maps each server id to its `displayCode`, and
+drops all other fields. See [build and deploy](build-and-deploy.md).
+
+Invariants:
+- The map holds `displayCode` only. The front matter never reaches the browser or the clipboard.
+- The map is written one time for each page. All functions below read it.
+- The map is inline JSON in a `<script>` block. A server file that holds the text `</script>` breaks
+  the page. No catalog file holds this text now.
+
+The page size grows with the catalog, because each page holds the full map. The catalog is small. When
+it grows, put the code in a data attribute on the button, or fetch a JSON file.
+
 ## Copy and download
 
-`src/_includes/copy-functionality.njk` gives three global functions:
+The same file gives three global functions:
 
 | Function | Called from | Effect |
 |---|---|---|
@@ -25,24 +45,22 @@ simple substring test. When no card matches, the script hides `#servers-grid`, a
 | `copyServerCodeLarge(id, button)` | the main button on a detail page | copies the code, and replaces the button classes for 2 seconds |
 | `downloadServerFile(filename)` | the download button on a detail page | makes a Blob, and starts a browser download |
 
-Each function reads the full catalog from an inline data dump:
+Each function reads `window.serverCode`, and stops when the id gives no code:
 
 ```javascript
-const serverData = {{ servers | dump | safe }};
-const server = serverData[serverId];
-navigator.clipboard.writeText(server.displayCode);
+const code = window.serverCode[serverId];
+if (!code) return;
+navigator.clipboard.writeText(code);
 ```
 
-Consequences to keep in mind:
-- The dump puts the full catalog, code included, in every page that includes this file. The page size
-  grows with the catalog.
-- The functions always copy `displayCode`, so the front matter never reaches the clipboard.
-- `downloadServerFile()` finds the server with `filename.replace('.cs', '')`. This works only when the
-  `name` field equals the server id plus `.cs`. See [backlog](../plans/backlog.md).
+A shared helper `restoreButton(button, content, className)` puts the button back to its first look
+after 2 seconds. It also clears the inline styles that `copyServerCode()` sets.
+
+`downloadServerFile()` finds the server with `filename.replace('.cs', '')`. This works only when the
+`name` field equals the server id plus `.cs`. See [backlog](../plans/backlog.md).
 
 ## Small helpers
 
-- `copy-text.njk` gives `copyText(text)`. The setup page uses it for command examples.
-- `toast-system.njk` gives `showToast(message, type)`. No page includes this file at present.
+`copy-text.njk` gives `copyText(text)`. The setup page uses it for command examples.
 
 Related: [Templates and layouts](templates-and-layouts.md), [Data pipeline](data-pipeline.md).

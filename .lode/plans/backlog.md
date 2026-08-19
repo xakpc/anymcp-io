@@ -16,17 +16,6 @@ links give a GitHub 404.
 
 The `servers.njk` link also writes the repository URL in full, but `site.github` holds the same value.
 
-## Duplicate card markup
-
-`src/_includes/server-card.njk` is a card component, but no template includes it. `src/index.njk` holds
-its own copy of the markup. The two copies are not identical: the `index.njk` copy adds
-`flex flex-col h-full`. Choose one: use the component in `index.njk`, or delete the component.
-
-## Unused toast system
-
-`src/_includes/toast-system.njk` gives `showToast()`, but no page includes it. The copy buttons give
-their feedback with an inline button state instead. Delete the file, or connect it.
-
 ## Dark mode is not reachable
 
 `base.njk` sets `darkMode: 'class'` and holds `.dark` CSS rules, but no control adds the `dark` class.
@@ -34,18 +23,26 @@ Add a theme switch, or remove the dead rules.
 
 ## `.mcp.json` is incomplete
 
-`.mcp.json` lists four servers, and does not list `xquik`. The file is not in git. Decide if the
-repository must hold an example configuration for all servers.
+`.mcp.json` lists four servers, and does not list `xquik`. Decide if the repository must hold an
+example configuration for all servers.
 
-## Full catalog in every page
+## `downloadServerFile()` depends on the name field
 
-`copy-functionality.njk` writes `{{ servers | dump | safe }}` three times in each page that includes it.
-Each page therefore carries the source of every server, three times. The catalog is small now. When it
-grows, put the code in a data attribute on the button, or fetch a JSON file.
+The function finds the server with `filename.replace('.cs', '')`. This works only when the `name`
+field equals the server id plus `.cs`. A server with a different `name` gives no download. Pass the
+server id to the function instead.
+
+## `npm run debug` needs a POSIX shell
+
+The script sets `DEBUG=Eleventy*` with POSIX syntax. This fails in PowerShell, the shell of the main
+developer. Use `cross-env`, or delete the script.
 
 ## Empty directories
 
-`scripts/`, `test/`, and `.github/workflows/` hold no files. The git history shows earlier CI work
+`scripts/`, `test/`, `src/assets/`, and `.github/workflows/` hold no files. Git does not track an empty
+directory, so they exist only on the local disk. The git history shows earlier CI work
 (`ci: add wrangler setup`, `ci: fix package lock`). Confirm if CI must return.
+
+`.gitignore` also lists `/test-results/`. No test tool writes this directory now.
 
 Related: [Practices](../practices.md), [Site summary](../site/summary.md).

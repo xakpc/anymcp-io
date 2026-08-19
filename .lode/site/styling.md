@@ -52,8 +52,10 @@ pre[class*="language-"] { background: #011627; color: #d6deeb; }
 .token.string  { color: #ecc48d; }
 ```
 
-`.eleventy.js` does not use `@11ty/eleventy-plugin-syntaxhighlight`, although `package.json` lists the
-package. The comment at the top of the configuration records this decision: the site uses client-side
-Prism instead of build-time highlighting.
+The site does no build-time highlighting. The comment at the top of `.eleventy.js` records this
+decision. `package.json` does not list a syntax highlight plugin.
+
+Each token rule is written one time. Do not add a second rule for the same token: the last rule wins,
+and it hides the Night Owl color.
 
 Related: [Templates and layouts](templates-and-layouts.md).
