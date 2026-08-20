@@ -46,12 +46,15 @@ export default function(eleventyConfig) {
       install: `${base}/install.md`,
       index: `${base}/llms.txt`,
       runtime: {
-        sdk: '.NET 10',
-        check: 'dotnet --version',
-        note: 'dotnet run <file>.cs with #:package directives is a .NET 10 SDK feature. A file-based app writes no bin or obj directory next to the file; the SDK caches the build under the temp directory of the user.',
+        sdk: '.NET 10 or later',
+        check: 'dotnet --list-sdks',
+        note: 'The dotnet run <file>.cs command with #:package directives is a feature of the .NET 10 SDK. Each SDK from version 10 operates, and each earlier SDK fails. Check with --list-sdks, and not with --version: a global.json file can select an earlier SDK on a computer that also has version 10. A file-based app writes no bin directory and no obj directory near the file. The SDK keeps the build output in a cache in the temporary directory of the user.',
         scope: 'project',
         configFile: '.mcp.json in the project root',
-        serverDirectory: '.mcp-servers/'
+        serverDirectory: '.mcp-servers/',
+        // The end state an installing agent should expect, so it does not read the approval
+        // prompt as a failure and retry the registration.
+        postInstall: 'The claude mcp add command reports "Pending approval" for a project server until a person approves the server. For an agent, this is the correct end state: stop there, and tell the user to start the client again and approve the server.'
       },
       servers: (serversArray || []).map(s => ({
         id: s.id,

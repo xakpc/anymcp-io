@@ -50,7 +50,7 @@ showNavigation: false
       </h2>
       <p class="text-muted-foreground mb-4">What you need before getting started</p>
       <ul class="space-y-2 text-slate-700">
-        <li>• The .NET 10 SDK. Check with <code class="bg-muted px-1 py-0.5 rounded text-xs">dotnet --version</code>; the output must start with <code class="bg-muted px-1 py-0.5 rounded text-xs">10.</code>. Running a <code class="bg-muted px-1 py-0.5 rounded text-xs">.cs</code> file directly is a .NET 10 feature, so earlier SDKs fail.</li>
+        <li>• The .NET 10 SDK, or later. Check with <code class="bg-muted px-1 py-0.5 rounded text-xs">dotnet --list-sdks</code>; one line must show 10 or higher. Running a <code class="bg-muted px-1 py-0.5 rounded text-xs">.cs</code> file directly is a .NET 10 feature, so earlier SDKs fail. Use <code class="bg-muted px-1 py-0.5 rounded text-xs">--list-sdks</code> rather than <code class="bg-muted px-1 py-0.5 rounded text-xs">--version</code>, which reports the SDK a <code class="bg-muted px-1 py-0.5 rounded text-xs">global.json</code> selects.</li>
         <li>• An LLM client that supports MCP (Claude Code, Claude Desktop, Cursor, Visual Studio, VS Code)</li>
         <li>• A single .cs file from the catalog, saved in your project</li>
       </ul>

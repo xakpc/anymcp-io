@@ -20,8 +20,8 @@ Notes:
   bool IsSuccess, JsonNode? Body)` to carry an HTTP result to the tool methods.
 - `win-app-screenshots` is the only server that runs on one platform only, and the only server that
   gives a picture back to the model. See [Windows window capture](windows-window-capture.md).
-- `date-times-mcp` and `xquik` declare `status: stable`, and `win-app-screenshots` declares
-  `status: beta`. The other three get `stable` from the parser default.
+- `date-times-mcp`, `win-app-screenshots`, and `xquik` declare `status: stable`. The other three get
+  `stable` from the parser default. No server is `beta` now, so no page shows a status callout.
 - `xquik` and `win-app-screenshots` declare a `name` field. The other four get the name from the file
   name.
 - `.mcp.json` is local, and git ignores it. Each developer adds an entry by hand, so its list of

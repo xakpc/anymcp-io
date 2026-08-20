@@ -35,6 +35,12 @@ change to the configuration.
 
 ## Invariants
 
+**The prose is Simplified Technical English.** `/llms.txt`, `/install.md`, each
+`/servers/{id}/index.md`, the `runtime` strings in `/servers.json`, and the agent prompt are
+procedures for a machine, so they obey ASD-STE100: one instruction in one sentence, the imperative
+form, the active voice, the simple present tense, and one meaning for one word. See
+[practices](../practices.md).
+
 **Write `| safe` on every value.** These outputs are not HTML, and Nunjucks escapes by default. An
 escaped `<` makes a `.cs` file that does not compile, and an escaped `"` makes JSON that does not
 parse. The rule to review is simple: a non-HTML template holds no bare `{{ }}`.
@@ -72,6 +78,35 @@ that stream and break the connection.
 `tools/list` response holds `generate_password` where the page shows `GeneratePassword`. The
 `wireName` filter in `.eleventy.js` makes the first form. See
 [automated testing](../catalog/automated-testing.md).
+
+## The end state that an agent can reach
+
+An agent that installs a server cannot restart the client it runs inside, and cannot approve a
+project server for a person. So the pages give it a success condition that it can reach by itself,
+and name the conditions that look like a failure and are not:
+
+- **`Pending approval` is success.** `claude mcp add` writes `.mcp.json`, and Claude Code connects
+  the server only after a person approves it. The pages say to stop there, and to ask the user to
+  restart the client and approve, or to run `/mcp`. A page that asks for a `connected` status
+  instead names a condition that an installing agent can never see, and the agent then retries the
+  registration.
+- **A silent build is success.** `dotnet build ... -v q` prints nothing and exits 0. There is no
+  `Build succeeded` line to look for.
+- **No stdio smoke test.** JSON-RPC lines that are piped in one block give no output, because
+  standard input reaches the end of the file before the host answers `initialize`. The log line is
+  `transport completed reading messages`. The first client start is the test.
+- **`claude mcp add` writes `"env": {}`.** The file therefore does not match the JSON snippet on the
+  page byte for byte. The pages say the two forms are equivalent, so an agent does not "correct" it.
+
+Two more rules keep an agent from making a wrong command:
+
+- **Every step repeats the working directory.** All paths are relative to the project root. An agent
+  that moves into `.mcp-servers/` to read a file builds `.mcp-servers/.mcp-servers/...` on the next
+  step. Each command block says which directory it runs in.
+- **The SDK check is `dotnet --list-sdks`.** `dotnet --version` gives the SDK that is selected now,
+  and a `global.json` file can select an SDK before 10 on a machine that also has 10. The
+  requirement is 10 **or later**: 11 and later are correct. `/servers.json` holds the same check in
+  `runtime.check`, and the approval rule in `runtime.postInstall`.
 
 ## The two filters
 

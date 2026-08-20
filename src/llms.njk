@@ -3,23 +3,23 @@ permalink: "/llms.txt"
 ---
 # AnyMCP
 
-> A catalog of MCP servers that are each one C# file. You download the file, and you point
-> your MCP client at `dotnet run <file>.cs -v q`. There is no project file, no build step of
-> your own, and no container. The only prerequisite is the .NET 10 SDK.
+> A catalog of MCP servers. Each server is one C# file. Download the file, then point your MCP
+> client to `dotnet run <file>.cs -v q`. There is no project file, no build step of your own, and
+> no container. The .NET 10 SDK is the only requirement.
 
-- Read {{ site.url }}/install.md one time. The procedure is the same for every server.
-- Each server has a machine-readable page. Fetch the `.md`, and not the HTML.
-- The whole catalog as JSON: {{ site.url }}/servers.json
+- Read {{ site.url }}/install.md one time. The steps are the same for each server.
+- Each server has a page for a machine. Get the `.md` page, and not the HTML page.
+- The full catalog as JSON: {{ site.url }}/servers.json
 
 ## Servers
 {% for server in serversArray %}
-- [{{ server.id | safe }}]({{ site.url }}/servers/{{ server.id }}/index.md): {{ server.description | safe }} — status {{ server.status | safe }}, {{ server.tools.length }} tool(s), tags: {{ server.tags | join(", ") | safe }}.{% if server.envVars.length %} Needs the environment variable(s) {{ server.envVars | join(", ") | safe }}.{% endif %}
+- [{{ server.id | safe }}]({{ site.url }}/servers/{{ server.id }}/index.md): {{ server.description | safe }} — status {{ server.status | safe }}, {{ server.tools.length }} tool(s), tags: {{ server.tags | join(", ") | safe }}.{% if server.envVars.length %} This server needs the environment variable(s) {{ server.envVars | join(", ") | safe }}.{% endif %}
 {%- endfor %}
 
 ## Optional
 {% for server in serversArray %}
-- [{{ server.name | safe }}]({{ site.url }}/servers/{{ server.id }}/{{ server.name }}): the C# source of {{ server.id | safe }}, ready to save and run.
+- [{{ server.name | safe }}]({{ site.url }}/servers/{{ server.id }}/{{ server.name }}): the C# source of {{ server.id | safe }}. Save the file, then run it.
 {%- endfor %}
-- [Install guide]({{ site.url }}/install.md): the prerequisite, the client configuration shapes, and the failures to expect.
-- [Human catalog]({{ site.url }}/): the same catalog as a web site.
+- [Install guide]({{ site.url }}/install.md): the requirement, the shapes of the client configuration, and the failures to expect.
+- [Catalog for a person]({{ site.url }}/): the same catalog as a web site.
 - [Source repository]({{ site.github }}): the servers, the site, and the test harness.

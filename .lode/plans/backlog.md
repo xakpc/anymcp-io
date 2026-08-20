@@ -22,6 +22,14 @@ The build layer cannot rebuild a server that the local LLM client holds open; se
 harness could instead see the MSB3026 lock warnings and say what to do. Decide if that is worth the
 code.
 
+## The lode still describes the inside of a guest server
+
+[Practices](../practices.md) says the lode covers XAKPC Dev Labs servers only. Two lines in
+[server inventory](../catalog/server-inventory.md) break that rule: they call `xquik` "the model to
+follow for a new API-backed server", and they name its `XquikApiResult` record. An API-backed server
+of this project must carry that pattern instead. Decide whether to cut the two lines now, or to keep
+them until such a server exists.
+
 ## No server carries a date
 
 The parser invents no date any more, and no `.cs` file sets `lastUpdated` or `createdDate`, so the

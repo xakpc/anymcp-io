@@ -12,66 +12,80 @@ permalink: "/servers/{{ serverData.id }}/index.md"
 - File: `{{ serverData.name | safe }}`
 - Status: {{ serverData.status | safe }} — Version: {{ serverData.version | safe }} — License: {{ serverData.license | safe }} — Author: {{ serverData.author | safe }}
 - Tags: {{ serverData.tags | join(", ") | safe }}
-- Source, ready to download: {{ site.url }}/servers/{{ serverData.id }}/{{ serverData.name }}
-- Human page: {{ site.url }}/servers/{{ serverData.id }}/
+- Source file to download: {{ site.url }}/servers/{{ serverData.id }}/{{ serverData.name }}
+- Page for a person: {{ site.url }}/servers/{{ serverData.id }}/
 - Shared install guide: {{ site.url }}/install.md
 {% if "windows" in serverData.tags %}
-> This server runs on Windows only. Stop here on macOS or Linux, and tell the user why.
+> This server operates on Windows only. Stop here on macOS or Linux, and tell the user the cause.
 {%- endif %}
 {%- if serverData.status != "stable" %}
-> This server is {{ serverData.status | safe }}. Say so before you install it.
+> The status of this server is {{ serverData.status | safe }}. Tell the user this before you install it.
 {%- endif %}
 
-These steps install the server **in the current project**. The file goes in the project, and the
-configuration goes in the `.mcp.json` of the project. Nothing is written outside the project
-directory, and nothing changes for other projects on this machine. To install the server for every
-project instead, read the last section.
+These steps install the server **into the current project**. The server file goes in the project,
+and the configuration goes in the `.mcp.json` file of the project. These steps write no file outside
+the project directory, and they change no other project on this computer. To install the server for
+all the projects of the user, read the last section.
 
-## Prerequisite
+**Do all the commands on this page in the root directory of the project.** Each path is relative to
+that directory. Do not change the working directory between the steps. If you go into
+`.mcp-servers/` to read the file, go back to the root directory before the next command. If you do
+not go back, the relative path becomes double and the command fails.
+
+## Before you start
 
 ```
-dotnet --version
+dotnet --list-sdks
 ```
 
-The output must start with `10.`. `dotnet run <file>.cs` with `#:package` directives is a
-.NET 10 SDK feature, and every earlier SDK fails. If the version is lower, read
-{{ site.url }}/install.md before you continue.
+One line of the output must show version 10 or a later version. The `dotnet run <file>.cs` command
+with `#:package` directives is a feature of the .NET 10 SDK. Each SDK before version 10 fails. An
+SDK after version 10 is correct. Use `--list-sdks`. Do not use `--version`: the
+`dotnet --version` command gives the SDK that the computer selects now, and a `global.json` file can
+select an earlier SDK. If no SDK is version 10 or later, read {{ site.url }}/install.md before you
+continue.
 
 ## 1. Put the file in the project
 
-From the root directory of the project:
+Do these commands in the root directory of the project.
 
-bash or zsh:
+In bash or zsh:
 
 ```
 mkdir -p .mcp-servers
 curl -fsSL -o .mcp-servers/{{ serverData.name }} "{{ site.url }}/servers/{{ serverData.id }}/{{ serverData.name }}"
 ```
 
-PowerShell:
+In PowerShell:
 
 ```
 New-Item -ItemType Directory -Force .mcp-servers | Out-Null
 Invoke-WebRequest -Uri "{{ site.url }}/servers/{{ serverData.id }}/{{ serverData.name }}" -OutFile ".mcp-servers/{{ serverData.name }}"
 ```
 
-The file starts with a `// ---` metadata comment block. It is valid C#, and `dotnet run`
-ignores it.
+The file starts with a `// ---` comment block that contains the metadata. This block is correct C#,
+and the `dotnet run` command ignores it.
 
 ## 2. Build one time
+
+Do this command in the root directory of the project:
 
 ```
 dotnet build .mcp-servers/{{ serverData.name }} -v q
 ```
 
-The first build restores the packages and compiles, which takes from 30 seconds to two
-minutes on a cold cache. An MCP client gives a server about 30 seconds to start, so a
-server that was never built reports a failure that is only a timeout.
+**A correct build prints no text.** The `-v q` option removes the summary, and there is no
+`Build succeeded` line. Empty output and exit code 0 are the correct result. Do not do the command
+again. A build that fails prints the errors.
+
+The first build gets the packages and compiles the file. If the cache is empty, this takes from 30
+seconds to two minutes. An MCP client gives a server approximately 30 seconds to start. If you do
+not build the server first, the client reports a failure that is only a timeout.
 
 This command adds no `bin` directory and no `obj` directory to the project. A file-based app keeps
-its build output in a cache of the user, under `%TEMP%/dotnet/runfile/` on Windows and
-`$TMPDIR/dotnet/runfile/` elsewhere. The project directory holds one `.cs` file and nothing else, so
-`.gitignore` needs no new line.
+its build output in a cache of the user: `%TEMP%/dotnet/runfile/` on Windows, and
+`$TMPDIR/dotnet/runfile/` on the other operating systems. The project directory gets one `.cs` file
+and no other file, and `.gitignore` needs no new line.
 {% if serverData.envVars.length %}
 ## 3. Environment variables
 
@@ -80,28 +94,32 @@ This server reads these variables:
 - `{{ envVar | safe }}`
 {%- endfor %}
 
-Ask the user for each value. Do not invent one, and do not write one into `.mcp.json`, because that
-file belongs to the project and goes into version control. Put the name of the variable in the file,
-and keep the value in the environment.
+Ask the user for each value. Do not make a value, and do not write a value in the `.mcp.json` file.
+That file is a part of the project and goes into version control. Write the name of the variable in
+the file, and keep the value in the environment.
 
-The server starts and lists its tools with no value set. A key is needed only when the model
-calls a tool, so a failure at startup is never a missing key.
+The server starts and lists its tools when no value is set. The server needs a key only when the
+model calls a tool. A failure at the start is thus never a missing key.
 {%- endif %}
 
 ## {% if serverData.envVars.length %}4{% else %}3{% endif %}. Register the server in this project
 
-Claude Code:
+For Claude Code, do this command in the root directory of the project:
 
 ```
 claude mcp add {{ serverData.id }} --scope project{% if serverData.envVars.length %}{% for envVar in serverData.envVars %} --env {{ envVar | safe }}={{ "${" }}{{ envVar | safe }}{{ "}" }}{% endfor %}{% endif %} -- dotnet run ./.mcp-servers/{{ serverData.name }} -v q
 ```
 
-`--scope project` writes `.mcp.json` in the root directory of the project. Commit that file, and
-every person who clones the project gets the server. The `--` separator is required, because the
-command that follows holds the `-v q` option.
+The `--scope project` option writes the `.mcp.json` file in the root directory of the project.
+Commit that file. Then each person who clones the project gets the server. The `--` separator is
+necessary, because the command that comes after it contains the `-v q` option.
+{% if not serverData.envVars.length %}
+The command writes an empty `"env": {}` block. The JSON example below does not show that block. The
+two forms are the same. Do not change the file.
+{%- endif %}
 
-A client that reads a JSON configuration file. Claude Code, Claude Desktop, Cursor, and
-Windsurf use `mcpServers`. Put this in `.mcp.json` in the root directory of the project:
+Claude Code, Claude Desktop, Cursor, and Windsurf read a JSON configuration file, and they use the
+`mcpServers` key. Put this text in the `.mcp.json` file in the root directory of the project:
 
 ```json
 {
@@ -120,69 +138,76 @@ Windsurf use `mcpServers`. Put this in `.mcp.json` in the root directory of the 
 }
 ```
 
-Visual Studio and VS Code use `servers` in place of `mcpServers`. The object inside is the
-same.
+Visual Studio and VS Code use `servers` in place of `mcpServers`. The object in the key is the same.
 
-The path is relative to the project, so it stays correct for every person who clones the project, on
-every operating system. It resolves against the working directory of the client, which is the project
-directory. A client that starts a server somewhere else needs an absolute path instead.
+The path is relative to the project. It stays correct for each person who clones the project, and on
+each operating system. The client finds the path from its working directory, which is the project
+directory. A client that starts a server from a different directory needs an absolute path.
 {%- if serverData.envVars.length %}
 
-Claude Code expands `${...}` from the environment when it reads `.mcp.json`, so the file holds the
-name of the variable and no secret. A client that does not expand a variable needs the literal value,
-and that configuration must then stay out of version control.
+Claude Code replaces `${...}` with the value from the environment when it reads the `.mcp.json`
+file. The file thus contains the name of the variable and no secret. A client that does not replace
+a variable needs the value in the file. Keep such a configuration out of version control.
 {%- endif %}
 
-## {% if serverData.envVars.length %}5{% else %}4{% endif %}. Verify
-
-Restart the client in the project directory, then:
+## {% if serverData.envVars.length %}5{% else %}4{% endif %}. Check the installation
 
 ```
 claude mcp list
 claude mcp get {{ serverData.id }}
 ```
 
-`{{ serverData.id }}` must show as connected, with {{ serverData.tools.length }} tool(s). Then
-ask the model to call `{{ serverData.tools[0].name | wireName | safe }}`, and confirm that a
-result comes back.
+**If an agent does the installation, stop at the `Pending approval` state.** Claude Code connects a
+project server only after a person approves the server. An agent cannot approve the server for the
+user, and an agent cannot start again the client that contains it. Thus
+`Status: ⏸ Pending approval (run claude to approve)` is the correct result. It is not a failure. Do
+not do the command again. Stop here, and tell the user to start Claude Code again and approve the
+prompt, or to use the `/mcp` command.
 
-Claude Code asks a person to approve a project server the first time it reads `.mcp.json`. Approve
-the prompt, or run `/mcp` to approve it later.
+**Do not test the server manually.** If you send JSON-RPC lines in one block, the server gives no
+output. Standard input comes to the end of the file before the host answers `initialize`, and the
+log shows only `transport completed reading messages`. This looks like a defective server, but the
+server is correct. The first client start is the test.
+
+After a person starts the client again in the project directory and approves the server,
+`{{ serverData.id }}` shows the status `connected`, with {{ serverData.tools.length }} tool(s). Then
+tell the model to call `{{ serverData.tools[0].name | wireName | safe }}`, and make sure that a
+result comes back.
 
 ## Tools
 
-The wire name is what a `tools/list` response holds. The C# name is what the catalog page
-shows.
+A `tools/list` response contains the wire name. The catalog page shows the C# name.
 {% for tool in serverData.tools %}
 - `{{ tool.name | wireName | safe }}` (C# `{{ tool.name | safe }}`) — {{ tool.description | safe }}
 {%- endfor %}
 
-## Remove
+## Remove the server
 
 ```
 claude mcp remove {{ serverData.id }} --scope project
 ```
 
-Then delete `.mcp-servers/{{ serverData.name }}`.
+Then delete the `.mcp-servers/{{ serverData.name }}` file.
 
-## Install for every project instead
+## Install the server for all the projects of one user
 
-Do this only when the user asks for it. It changes the configuration of the user, and not the
-project.
+Do this only if the user asks for it. It changes the configuration of the user, and not the
+configuration of the project.
 
 ```
 claude mcp add {{ serverData.id }} --scope user -- dotnet run <ABSOLUTE_PATH>/{{ serverData.name }} -v q
 ```
 
-At this scope the path must be absolute, because the working directory is different in each project.
-Keep the file in a directory that stays, and do not move it: the configuration holds the path.
+At this scope, the path must be absolute, because each project has a different working directory.
+Keep the file in a permanent directory. Do not move the file, because the configuration contains the
+path.
 
 ## Notes
 
-- Keep `-v q`. Standard output carries the JSON-RPC stream, and without `-v q` the build
-  output can reach it and break the protocol. It is two elements, `"-v"` and `"q"`, and not
-  one element `"-v q"`.
+- Keep the `-v q` option. Standard output carries the JSON-RPC stream. Without `-v q`, the build
+  output can come to that stream and break the protocol. It is two elements, `"-v"` and `"q"`. It is
+  not one element `"-v q"`.
 {%- if serverData.id == "image-utility" %}
-- This server keeps every file path inside its working directory, and refuses a path outside
-  it. With a project install, that directory is the project.
+- This server keeps each file path in its working directory, and refuses a path outside that
+  directory. With a project installation, that directory is the project.
 {%- endif %}

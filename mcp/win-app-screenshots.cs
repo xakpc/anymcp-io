@@ -8,7 +8,7 @@
 //   - screenshots
 //   - images
 //   - utilities
-// status: beta
+// status: stable
 // version: 1.0.0
 // author: XAKPC Dev Labs
 // license: MIT

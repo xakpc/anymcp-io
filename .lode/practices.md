@@ -94,6 +94,33 @@ configuration and the syntax colors. Do not add separate CSS files. See
 The parser must never fail because a field is absent. It supplies a default for every field. Keep this
 behavior when you change the parser. See [data pipeline](site/data-pipeline.md).
 
+## Write the agent pages in Simplified Technical English
+
+The machine-readable outputs are procedures that a coding agent obeys without a person. Write them in
+ASD-STE100 Simplified Technical English. This applies to `src/llms.njk`, `src/agent-install.njk`,
+`src/server-md.njk`, the `runtime` strings in the `serversManifest` filter in `.eleventy.js`, and the
+`data-prompt` text in `src/servers.njk`.
+
+The rules that change the text most:
+
+- One instruction in one sentence. Use the imperative form for each instruction.
+- Keep a procedural sentence to 20 words, and a descriptive sentence to 25 words.
+- Use the active voice and the simple present tense.
+- Use one word for one meaning. Examples of the words to keep out: verify (use check), symptom (use
+  problem), equivalent (use the same), invent (use make), expand a variable (use replace), correct as
+  a verb (use change), smoke-test (use test manually).
+- Start a warning with the command, and give the cause after it.
+
+The prose of a page is free to change, but the commands are not. `test/site.test.js` checks the
+command text, the order of the scopes, and the `-v q` option. Run `npm test` after a rewrite.
+
+The front matter `description` and `longDescription` fields also reach an agent, through
+`/llms.txt`, `/servers.json`, and the top of each `.md` page. They are catalog metadata, and this
+rule does not apply to them today. See [front-matter schema](catalog/front-matter-schema.md).
+
+The pages for a person, `src/index.njk`, `src/setup.njk`, and the HTML part of `src/servers.njk`,
+keep their usual English.
+
 ## Test a change with the local server
 
 Run `npm run serve`, and open http://localhost:8080/. Check the home page, the search box, and the
@@ -104,6 +131,21 @@ detail page of the server that you changed.
 The harness lints the metadata, compiles the file, and starts the server to read its tool list. It
 finds a new file by itself, so adding a server needs no change to a test file. See
 [automated testing](catalog/automated-testing.md).
+
+## The lode covers XAKPC Dev Labs servers only
+
+A catalog entry from another author is a guest in `mcp/`. The lode documents the servers of XAKPC Dev
+Labs, and the machinery that carries every entry: the parser, the templates, the harness, and the
+front matter contract. It does not document how a server of another author works inside, and it does
+not hold that server up as the model to follow.
+
+Read the `author` field of the front matter to tell the two apart. `xquik` is the one guest entry
+today.
+
+A guest entry still appears where a fact about the catalog needs it, for example a row in the
+[server inventory](catalog/server-inventory.md), or a name in a command line. What must not appear is
+its internal design, its API, or a lesson learned from its code. Keep such knowledge in the
+repository of its author.
 
 ## A server must list its tools with no secret set
 
