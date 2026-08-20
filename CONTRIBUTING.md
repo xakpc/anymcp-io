@@ -46,6 +46,7 @@ Your `.cs` file must include YAML front matter in C# comments, followed by your 
 // ---
 #:package Microsoft.Extensions.Hosting@10.0.11
 #:package ModelContextProtocol@2.2.0
+#:property PublishAot=false
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -139,6 +140,7 @@ Use these standardized tags for consistency:
 ```csharp
 #:package Microsoft.Extensions.Hosting@10.0.11
 #:package ModelContextProtocol@2.2.0
+#:property PublishAot=false
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
