@@ -1,8 +1,16 @@
+// The MCP SDK converts a C# method name to snake case, so GeneratePassword is
+// generate_password on the wire. The catalog page shows the C# name. An agent that
+// checks a tools/list response needs the wire name, so the machine-readable pages
+// show both. The filter and the manifest share this one definition.
+function toWireName(name) {
+  return String(name || '')
+    .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1_$2')
+    .toLowerCase();
+}
+
 export default function(eleventyConfig) {
   // Note: Using client-side Prism.js instead of server-side highlighting
-
-  // Copy static assets
-  eleventyConfig.addPassthroughCopy("src/assets");
 
   // Cloudflare Pages reads _headers from the root of the build output (_site).
   // Eleventy strips the input-directory prefix, so "src/_headers" lands at "_site/_headers".
@@ -24,36 +32,13 @@ export default function(eleventyConfig) {
     return num.toLocaleString();
   });
 
-  // Map of server id -> displayCode, for the client-side copy and download scripts.
-  // Only displayCode is needed in the browser, so the rest of each server is dropped.
-  eleventyConfig.addFilter("displayCodeMap", function(servers) {
-    const map = {};
-    for (const [id, server] of Object.entries(servers || {})) {
-      map[id] = server.displayCode;
-    }
-    return JSON.stringify(map);
-  });
-
-  // The MCP SDK converts a C# method name to snake case, so GeneratePassword is
-  // generate_password on the wire. The catalog page shows the C# name. An agent that
-  // checks a tools/list response needs the wire name, so the machine-readable pages
-  // show both.
-  eleventyConfig.addFilter("wireName", function(name) {
-    return String(name || '')
-      .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
-      .replace(/([A-Z]+)([A-Z][a-z])/g, '$1_$2')
-      .toLowerCase();
-  });
+  eleventyConfig.addFilter("wireName", toWireName);
 
   // The catalog manifest for machine consumers, at /servers.json. It drops `code` and
   // `displayCode`, which are larger than all other fields together, and it makes every
   // URL absolute, because an agent reads this file with no base URL.
   eleventyConfig.addFilter("serversManifest", function(serversArray, siteUrl) {
     const base = String(siteUrl || '').replace(/\/+$/, '');
-    const wire = (name) => String(name || '')
-      .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
-      .replace(/([A-Z]+)([A-Z][a-z])/g, '$1_$2')
-      .toLowerCase();
 
     return JSON.stringify({
       version: 1,
@@ -82,7 +67,7 @@ export default function(eleventyConfig) {
         // GetEnvironmentVariable("NAME") strings in the source, so strings are the contract.
         env: (s.envVars || []).map(v => (typeof v === 'string' ? v : v.name)),
         tools: (s.tools || []).map(t => ({
-          name: wire(t.name),
+          name: toWireName(t.name),
           methodName: t.name,
           description: t.description
         })),

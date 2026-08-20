@@ -193,3 +193,46 @@ describe('the Cloudflare header rules are published', () => {
     assert.ok(headers.includes('Content-Type: text/plain'), 'no text content type');
   });
 });
+
+describe('the code block that the copy buttons read', () => {
+  // The buttons on a server page take the code from <code id="server-code">.textContent,
+  // instead of a copy of every server embedded in every page. That only holds if the block
+  // is escaped: a raw "<" from a generic or a /// <summary> comment becomes a tag, and the
+  // browser drops it from textContent. So the block must decode back to displayCode, byte
+  // for byte.
+  // Nunjucks escapes a backslash to &#92; as well as the five usual characters. A browser
+  // decodes all six, so textContent gives the source back; this decoder must match.
+  // &amp; goes last, or it would decode an entity that the source itself holds.
+  const decode = (html) => html
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&#92;/g, '\\')
+    .replace(/&amp;/g, '&');
+
+  for (const server of servers) {
+    test(server.id, () => {
+      const page = read('servers', server.id, 'index.html');
+      const marker = page.indexOf('id="server-code"');
+      assert.notEqual(marker, -1, 'the page has no block with id="server-code"');
+
+      const start = page.indexOf('>', marker) + 1;
+      const end = page.indexOf('</code>', start);
+      assert.ok(end > start, 'the block does not close');
+
+      assert.equal(decode(page.slice(start, end)), server.displayCode,
+        'the block and displayCode differ. A "| safe" on the code block does this.');
+    });
+  }
+});
+
+describe('the sitemap', () => {
+  test('gives no empty lastmod, because nothing invents a date', () => {
+    const sitemap = read('sitemap.xml');
+    assert.equal(sitemap.includes('<lastmod></lastmod>'), false, 'an empty lastmod is invalid');
+    for (const match of sitemap.matchAll(/<lastmod>([^<]*)<\/lastmod>/g)) {
+      assert.match(match[1], /^\d{4}-\d{2}-\d{2}$/, `"${match[1]}" is not a date`);
+    }
+  });
+});

@@ -8,7 +8,7 @@ custom CSS are in `src/_includes/base.njk`.
 ```html
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
-  tailwind.config = { theme: { extend: { colors: { ... } } }, darkMode: 'class' }
+  tailwind.config = { theme: { extend: { colors: { ... } } } }
 </script>
 ```
 
@@ -36,10 +36,13 @@ as `bg-card` or `text-muted-foreground` works in any template.
 
 Both fonts load from Google Fonts.
 
-## Dark mode
+## One light theme
 
-`darkMode: 'class'` is set, and the CSS holds `.dark body` rules. No control adds the `dark` class to
-the document. Dark mode is therefore not active. See [backlog](../plans/backlog.md).
+The site has one theme, and it is light. There is no `darkMode` setting, no `.dark` rule, and no
+`dark:` utility class. The Tailwind default for `dark:` is the `prefers-color-scheme` media query,
+so a leftover `dark:` class turns itself on for a reader whose system asks for dark, on a background
+that stays light. Remove such a class, or build a real theme switch and the palette that goes with
+it.
 
 ## Code colors
 

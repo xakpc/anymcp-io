@@ -7,12 +7,11 @@ npm install          # install dependencies
 npm run serve        # development server at http://localhost:8080/
 npm start            # alias for serve
 npm run build        # production build into _site/
-npm run debug        # build with verbose Eleventy logs
 npm run deploy       # build, and then publish to Cloudflare Pages
 ```
 
-`npm run debug` sets `DEBUG=Eleventy*`. This syntax works in a POSIX shell. In PowerShell, set the
-variable first:
+There is no debug script. `DEBUG=Eleventy*` is POSIX syntax, and it fails in PowerShell, the shell
+of the main developer. Set the variable first:
 
 ```powershell
 $env:DEBUG = "Eleventy*"; npx eleventy
@@ -24,9 +23,8 @@ $env:DEBUG = "Eleventy*"; npx eleventy
 
 ```javascript
 export default function(eleventyConfig) {
-  eleventyConfig.addPassthroughCopy("src/assets");
   eleventyConfig.addPassthroughCopy("src/_headers");
-  // filters: date, localeString, displayCodeMap, wireName, serversManifest
+  // filters: date, localeString, wireName, serversManifest
   return {
     templateFormats: ["md", "njk", "html", "liquid"],
     dir: { input: "src", includes: "_includes", data: "_data", output: "_site" },
@@ -40,16 +38,17 @@ Filters:
 - `date(value, format)` - returns `M/D/YYYY` for that exact format string. If not, it returns the
   locale date. It returns an empty string for a false value.
 - `localeString(number)` - adds thousands separators. It returns an empty string for `0`.
-- `displayCodeMap(servers)` - returns a JSON string that maps each server id to its `displayCode`.
-  The copy scripts use it. See [client-side behavior](client-side-behavior.md).
 - `wireName(name)` - returns the snake case form of a C# method name, which is the name that a
-  `tools/list` response holds.
+  `tools/list` response holds. The module level `toWireName()` holds the rule, and `serversManifest`
+  calls that same function, so the manifest and the pages can never disagree.
 - `serversManifest(serversArray, siteUrl)` - returns the full JSON body of `/servers.json`. It drops
   `code` and `displayCode`, makes each URL absolute, and adds a `run` block with the correct argv.
 
-Both new filters serve the machine-readable endpoints. See [agent endpoints](agent-endpoints.md).
+Both name filters serve the machine-readable endpoints. See [agent endpoints](agent-endpoints.md).
 
-Note: `src/assets/` is empty at present. The passthrough rule is ready for future static files.
+The site has no `src/assets/` directory, and no passthrough rule for one. Add both together when a
+static file arrives. A rule for a path that does not exist copies nothing and raises no error, so
+such a rule is dead weight, and not a build failure.
 
 `src/_headers` goes to `_site/_headers`. Eleventy removes the input directory from the path, and
 Cloudflare Pages reads the file from the root of the build output. The file gives

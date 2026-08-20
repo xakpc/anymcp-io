@@ -15,50 +15,55 @@ card.style.display = shouldShow ? '' : 'none';
 The `data-server` attribute holds the name, the description, and the tags of the server. The match is a
 simple substring test. When no card matches, the script hides `#servers-grid`, and shows `#no-results`.
 
-## The shared code map
+## Where the code comes from
 
-`src/_includes/copy-functionality.njk` writes one global object at the top of its script:
+No page holds the code of another server. `src/_includes/copy-functionality.njk` reads the code from
+one of two places, in `serverCodeFor(serverId, fileName)`:
 
 ```javascript
-window.serverCode = {{ servers | displayCodeMap | safe }};
+const block = document.getElementById('server-code');
+if (block && block.dataset.serverId === serverId) return block.textContent;
+
+const response = await fetch('/servers/' + serverId + '/' + fileName);
+return stripFrontMatter(await response.text());
 ```
 
-The `displayCodeMap` filter is in `.eleventy.js`. It maps each server id to its `displayCode`, and
-drops all other fields. See [build and deploy](build-and-deploy.md).
+- On a detail page the code is already on the screen, in
+  `<code id="server-code" data-server-id="{id}">`. The buttons read that block, so the clipboard and
+  the page can never disagree, and nothing is fetched.
+- Anywhere else, for example a card on the home page, the published file at `/servers/{id}/{name}` is
+  fetched. That file holds the front matter, so `stripFrontMatter()` removes it.
 
 Invariants:
-- The map holds `displayCode` only. The front matter never reaches the browser or the clipboard.
-- The map is written one time for each page. All functions below read it.
-- The map is inline JSON in a `<script>` block. A server file that holds the text `</script>` breaks
-  the page. No catalog file holds this text now.
-
-The page size grows with the catalog, because each page holds the full map. The catalog is small. When
-it grows, put the code in a data attribute on the button, or fetch a JSON file.
+- The code block carries **no** `| safe` filter. The code holds `<` characters, in generics and in
+  `/// <summary>` comments. Raw output makes the browser read them as tags: the text leaves the page,
+  and `textContent` gives the copy buttons a file that does not compile. `test/site.test.js` decodes
+  the block of every server and compares it to `displayCode`.
+- Nunjucks escapes a backslash to `&#92;`, as well as the five usual characters. A browser decodes
+  all six, so `textContent` gives the source back. A test that reads the built HTML must decode all
+  six too.
+- `stripFrontMatter()` drops every line through the second `// ---` line, and then trims. This is the
+  rule of `extractCodeWithoutFrontMatter` in `src/_data/servers.js`. The two must stay the same, or a
+  copy from a card and a copy from a detail page differ.
+- The front matter never reaches the clipboard, from either source.
 
 ## Copy and download
 
-The same file gives three global functions:
+The same file gives four global functions. Each one takes the button as its last argument, because
+the functions are `async` and the implicit `event` global is gone when the promise resolves.
 
 | Function | Called from | Effect |
 |---|---|---|
-| `copyServerCode(id, button)` | card buttons, and the small button on the code block | copies the code, and turns the button green for 2 seconds |
-| `copyServerCodeLarge(id, button)` | the main button on a detail page | copies the code, and replaces the button classes for 2 seconds |
-| `downloadServerFile(id, filename)` | the download button on a detail page | makes a Blob, and starts a browser download |
+| `copyServerCode(id, file, button)` | card buttons, and the small button on the code block | copies the code, and turns the button green for 2 seconds |
+| `copyServerCodeLarge(id, file, button)` | the main button on a detail page | copies the code, and replaces the button classes for 2 seconds |
+| `downloadServerFile(id, file, button)` | the download button on a detail page | makes a Blob of the same text, and starts a browser download |
 | `copyPrompt(button)` | the agent-prompt button on a detail page | copies the text in `data-prompt` |
-
-Each function reads `window.serverCode`, and stops when the id gives no code:
-
-```javascript
-const code = window.serverCode[serverId];
-if (!code) return;
-navigator.clipboard.writeText(code);
-```
 
 A shared helper `restoreButton(button, content, className)` puts the button back to its first look
 after 2 seconds. It also clears the inline styles that `copyServerCode()` sets.
 
-`downloadServerFile()` takes the server id, so it does not depend on the value of the `name` field.
-The same file is also at `/servers/{id}/{id}.cs`. See [agent endpoints](agent-endpoints.md).
+A download gives the same text as a copy: the front matter is removed. An agent that wants the
+catalog file whole reads `/servers/{id}/{name}`. See [agent endpoints](agent-endpoints.md).
 
 ## The agent prompt
 

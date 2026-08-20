@@ -40,17 +40,22 @@ const server = {
   tags: Array.isArray(metadata.tags) ? metadata.tags : (metadata.tags ? [metadata.tags] : []),
   status: metadata.status || 'stable',
   downloads: metadata.downloads || 0,
-  lastUpdated: metadata.lastUpdated || <today>,
+  lastUpdated: metadata.lastUpdated || null,
   version: metadata.version || '1.0.0',
   author: metadata.author || 'Unknown',
   license: metadata.license || 'MIT',
-  createdDate: metadata.createdDate || metadata.lastUpdated || <today>,
+  createdDate: metadata.createdDate || metadata.lastUpdated || null,
   envVars: metadata.envVars || [],
   tools: tools,
   code: contents,
   displayCode: codeWithoutFrontMatter
 };
 ```
+
+The two date fields stay `null` when the front matter gives no date. No default of "today" exists:
+a build date is not an update date, and it made every server look changed on every build, in the
+page and in the `<lastmod>` of the sitemap. A template shows a date only inside a guard, and
+`sitemap.njk` writes `<lastmod>` only when `lastUpdated` is set.
 
 ## Tool extraction
 

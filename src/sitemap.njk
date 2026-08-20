@@ -6,6 +6,6 @@ permalink: "/sitemap.xml"
   <url><loc>{{ site.url }}/</loc></url>
   <url><loc>{{ site.url }}/setup/</loc></url>
 {%- for server in serversArray %}
-  <url><loc>{{ site.url }}/servers/{{ server.id }}/</loc><lastmod>{{ server.lastUpdated }}</lastmod></url>
+  <url><loc>{{ site.url }}/servers/{{ server.id }}/</loc>{% if server.lastUpdated %}<lastmod>{{ server.lastUpdated }}</lastmod>{% endif %}</url>
 {%- endfor %}
 </urlset>

@@ -1,7 +1,38 @@
 <script>
-// Server code for the browser, keyed by server id. Built once and shared by all
-// three functions below.
-window.serverCode = {{ servers | displayCodeMap | safe }};
+// The code of a server has exactly two sources, and no page carries the code of every
+// server any more:
+//   - a server page already shows the code, in <code id="server-code">. Reading that
+//     block costs nothing and cannot drift from what the reader sees.
+//   - anywhere else, the published file at /servers/{id}/{name} is fetched. That file is
+//     byte-identical to the catalog file, so the front matter is stripped here.
+
+// Drops every line through the second "// ---" line, then trims. This is the rule that
+// extractCodeWithoutFrontMatter in src/_data/servers.js uses to build displayCode, so a
+// fetched copy and a copy from the page are the same text.
+function stripFrontMatter(text) {
+  const lines = text.split('\n');
+  let startFound = false;
+
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].trim() !== '// ---') continue;
+    if (!startFound) {
+      startFound = true;
+      continue;
+    }
+    return lines.slice(i + 1).join('\n').trim();
+  }
+
+  return text.trim();
+}
+
+async function serverCodeFor(serverId, fileName) {
+  const block = document.getElementById('server-code');
+  if (block && block.dataset.serverId === serverId) return block.textContent;
+
+  const response = await fetch('/servers/' + serverId + '/' + fileName);
+  if (!response.ok) throw new Error('could not read the server file: ' + response.status);
+  return stripFrontMatter(await response.text());
+}
 
 // Restores a button to its previous look after the success state.
 function restoreButton(button, content, className) {
@@ -15,17 +46,16 @@ function restoreButton(button, content, className) {
 }
 
 // Copy code functionality for small buttons (cards, small copy buttons)
-window.copyServerCode = function(serverId, buttonElement) {
-  const code = window.serverCode[serverId];
-  if (!code) return;
+window.copyServerCode = async function(serverId, fileName, buttonElement) {
+  if (!buttonElement) return;
 
-  navigator.clipboard.writeText(code).then(function() {
-    const button = buttonElement || event.target.closest('button');
-    if (!button) return;
+  try {
+    const code = await serverCodeFor(serverId, fileName);
+    await navigator.clipboard.writeText(code);
 
-    const originalContent = button.innerHTML;
+    const originalContent = buttonElement.innerHTML;
 
-    button.innerHTML = `
+    buttonElement.innerHTML = `
       <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
       </svg>
@@ -33,79 +63,80 @@ window.copyServerCode = function(serverId, buttonElement) {
     `;
 
     // Just add green background without changing anything else
-    button.style.backgroundColor = '#16a34a';
-    button.style.color = 'white';
-    button.style.borderColor = '#16a34a';
+    buttonElement.style.backgroundColor = '#16a34a';
+    buttonElement.style.color = 'white';
+    buttonElement.style.borderColor = '#16a34a';
 
-    restoreButton(button, originalContent, button.className);
-  }).catch(function(err) {
+    restoreButton(buttonElement, originalContent, buttonElement.className);
+  } catch (err) {
     console.error('Failed to copy: ', err);
-  });
+  }
 };
 
 // Copy code functionality for large buttons (server page main copy button)
-window.copyServerCodeLarge = function(serverId, buttonElement) {
-  const code = window.serverCode[serverId];
-  if (!code) return;
+window.copyServerCodeLarge = async function(serverId, fileName, buttonElement) {
+  if (!buttonElement) return;
 
-  navigator.clipboard.writeText(code).then(function() {
-    const button = buttonElement || event.target.closest('button');
-    if (!button) return;
+  try {
+    const code = await serverCodeFor(serverId, fileName);
+    await navigator.clipboard.writeText(code);
 
-    const originalContent = button.innerHTML;
-    const originalClasses = button.className;
+    const originalContent = buttonElement.innerHTML;
+    const originalClasses = buttonElement.className;
 
-    button.innerHTML = `
+    buttonElement.innerHTML = `
       <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
       </svg>
       Copied!
     `;
 
-    button.className = originalClasses
+    buttonElement.className = originalClasses
       .replace(/bg-\w+(-\w+)?/g, 'bg-green-600')
       .replace(/hover:bg-\w+(-\w+)?/g, 'hover:bg-green-700')
       .replace(/text-\w+(-\w+)?/g, 'text-white');
 
-    restoreButton(button, originalContent, originalClasses);
-  }).catch(function(err) {
+    restoreButton(buttonElement, originalContent, originalClasses);
+  } catch (err) {
     console.error('Failed to copy: ', err);
-  });
+  }
 };
 
-// Download server file functionality. The caller passes the server id, so this does
-// not depend on the 'name' field being the id plus '.cs'.
-window.downloadServerFile = function(serverId, filename) {
-  const code = window.serverCode[serverId];
-  if (!code) return;
+// Download server file functionality. The downloaded file carries no front matter, which
+// is what the page shows. An agent that wants the catalog file whole reads
+// /servers/{id}/{name} instead.
+window.downloadServerFile = async function(serverId, fileName, buttonElement) {
+  if (!buttonElement) return;
 
-  const blob = new Blob([code], { type: 'text/plain' });
-  const url = window.URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  window.URL.revokeObjectURL(url);
+  try {
+    const code = await serverCodeFor(serverId, fileName);
 
-  // Enhanced feedback with button state
-  const button = event.target.closest('button');
-  if (!button) return;
+    const blob = new Blob([code], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
 
-  const originalText = button.innerHTML;
-  const originalClasses = button.className;
+    const originalText = buttonElement.innerHTML;
+    const originalClasses = buttonElement.className;
 
-  // Change button to success state
-  button.innerHTML = `
-    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-    </svg>
-    Downloaded!
-  `;
-  button.className = 'inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors';
+    // Change button to success state
+    buttonElement.innerHTML = `
+      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+      </svg>
+      Downloaded!
+    `;
+    buttonElement.className = 'inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors';
 
-  restoreButton(button, originalText, originalClasses);
+    restoreButton(buttonElement, originalText, originalClasses);
+  } catch (err) {
+    console.error('Failed to download: ', err);
+  }
 };
 
 // Copies the agent prompt that the button carries in its data-prompt attribute. The text

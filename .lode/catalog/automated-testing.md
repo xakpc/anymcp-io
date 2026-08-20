@@ -25,6 +25,20 @@ flowchart TD
 The layers run in this order. Lint and site are first because they cost about one second each and
 need no toolchain.
 
+## A running server blocks its own build
+
+The build layer fails on a server that runs at that moment. The SDK writes the executable into the
+runfile cache, a live process holds that file, and MSBuild prints MSB3026 retry warnings:
+
+```
+warning MSB3026: Could not copy "...objdebugapphost.exe" to "...indebug{id}.exe".
+Beginning retry 1 in 1000ms. ... The file is locked by: "{id} (4460)"
+```
+
+The layer asserts that a build gives no warning, so it stops there. This is a condition of the
+machine, and not a defect: a CI runner starts with no client. Close the LLM client, or leave out
+that one server with `--server`, before you run the build layer at home.
+
 ## What the site layer checks
 
 It builds the site one time, and then reads `_site/`:
@@ -37,6 +51,11 @@ It builds the site one time, and then reads `_site/`:
 - `/servers.json` parses, covers the whole catalog, holds absolute URLs only, gives each server an
   argv that ends with `"-v"` and `"q"`, and names each tool in snake case.
 - Each `.md` page holds `-v q` and the absolute URL of its source file.
+- The `<code id="server-code">` block of each HTML page decodes back to `displayCode`, byte for byte.
+  The copy buttons read that block, so a `| safe` filter on it would give the reader one text and the
+  clipboard another. The decoder must handle `&#92;`: Nunjucks escapes a backslash as well as the
+  five usual characters. See [client-side behavior](../site/client-side-behavior.md).
+- `sitemap.xml` holds no empty `<lastmod>`, and every date in it is a plain `YYYY-MM-DD`.
 
 See [agent endpoints](../site/agent-endpoints.md).
 
