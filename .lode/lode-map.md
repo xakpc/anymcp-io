@@ -17,6 +17,7 @@ The index of all lode files. Read this file first.
 │   ├── styling.md                    Tailwind theme, fonts, and code colors
 │   ├── client-side-behavior.md       search, copy, download, and toast scripts
 │   ├── agent-endpoints.md            the machine-readable copy of the catalog
+│   ├── mcp-clients.md                Claude Code and Codex, and what differs
 │   └── build-and-deploy.md           commands, 11ty config, and Cloudflare Pages
 ├── catalog/                          the C# MCP servers
 │   ├── summary.md                    domain overview
@@ -45,6 +46,8 @@ The index of all lode files. Read this file first.
 | How do I change a color or a font? | [site/styling.md](site/styling.md) |
 | Why does the copy button behave like this? | [site/client-side-behavior.md](site/client-side-behavior.md) |
 | How does an agent install a server? | [site/agent-endpoints.md](site/agent-endpoints.md) |
+| Which client reads which file? | [site/mcp-clients.md](site/mcp-clients.md) |
+| How do I add support for a new MCP client? | [site/mcp-clients.md](site/mcp-clients.md) |
 | How do I build and publish? | [site/build-and-deploy.md](site/build-and-deploy.md) |
 | What is broken or unfinished? | [plans/backlog.md](plans/backlog.md) |
 
@@ -53,12 +56,12 @@ The index of all lode files. Read this file first.
 | Code | Lode |
 |---|---|
 | `mcp/*.cs` | [catalog/](catalog/summary.md) |
-| `mcp/win-app-screenshots.cs`, `scripts/Get-AppScreenshot.ps1` | [catalog/windows-window-capture.md](catalog/windows-window-capture.md) |
+| `mcp/win-app-screenshots.cs` | [catalog/windows-window-capture.md](catalog/windows-window-capture.md) |
 | `src/_data/servers.js`, `src/_data/serversArray.js` | [site/data-pipeline.md](site/data-pipeline.md) |
 | `src/*.njk`, `src/_includes/*.njk` | [site/templates-and-layouts.md](site/templates-and-layouts.md) |
 | `src/llms.njk`, `server-md.njk`, `server-raw.njk`, `servers-json.njk`, `agent-install.njk`, `robots.njk`, `sitemap.njk`, `src/_headers` | [site/agent-endpoints.md](site/agent-endpoints.md) |
+| `src/install-claude-code.njk`, `src/install-codex.njk` | [site/mcp-clients.md](site/mcp-clients.md) |
 | `src/_includes/base.njk` (theme part) | [site/styling.md](site/styling.md) |
 | `src/_includes/copy-functionality.njk`, `copy-text.njk` | [site/client-side-behavior.md](site/client-side-behavior.md) |
 | `.eleventy.js`, `package.json`, `wrangler.toml` | [site/build-and-deploy.md](site/build-and-deploy.md) |
-| `.mcp.json` | [catalog/mcp-server-authoring.md](catalog/mcp-server-authoring.md) |
 | `test/*`, `scripts/*`, `.github/workflows/mcp-tests.yml` | [catalog/automated-testing.md](catalog/automated-testing.md) |

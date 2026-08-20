@@ -104,10 +104,5 @@ code reads with `GetEnvironmentVariable` is in the `envVars` list, and the page 
 An explicit `output` path is accepted anywhere. This server does **not** use the root directory rule
 of `image-utility`, because that rule refuses the temp folder default.
 
-## The origin
-
-`scripts/Get-AppScreenshot.ps1` is the PowerShell script that this server comes from. It is not a
-catalog entry, and the site does not read it. Keep the two in agreement, or delete the script.
-
 Related: [Server inventory](server-inventory.md), [Server authoring](mcp-server-authoring.md),
 [Automated testing](automated-testing.md), [Practices](../practices.md).
