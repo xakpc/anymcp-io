@@ -5,7 +5,6 @@
     "build": "eleventy",
     "serve": "eleventy --serve",
     "start": "eleventy --serve",
-    "debug": "DEBUG=Eleventy* eleventy",
     "deploy": "npm run build && wrangler pages deploy _site",
     "test": "node scripts/run-tests.js",
     "test:lint": "node scripts/run-tests.js --layer lint",
