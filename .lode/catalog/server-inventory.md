@@ -24,8 +24,6 @@ Notes:
   `stable` from the parser default. No server is `beta` now, so no page shows a status callout.
 - `xquik` and `win-app-screenshots` declare a `name` field. The other four get the name from the file
   name.
-- `.mcp.json` is local, and git ignores it. Each developer adds an entry by hand, so its list of
-  servers is different on each machine. `xquik` usually stays out of it, because it needs an API key.
 - `image-utility` stays on the ImageSharp 3.x line on purpose. ImageSharp 4.x makes a build warning on
   each build when it finds no Six Labors license key. A warning breaks the copy-and-run promise of the
   catalog. Move to 4.x only if the project gets a license.

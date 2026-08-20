@@ -38,7 +38,7 @@ indentation.
 | `downloads` | number | `0` | sidebar. It shows only when the value is more than 0. The number is manual. |
 | `lastUpdated` | date `YYYY-MM-DD` | today | sidebar |
 | `createdDate` | date `YYYY-MM-DD` | `lastUpdated`, or today | sidebar |
-| `envVars` | list of strings | `[]` | adds an `env` block to the `.mcp.json` snippet on the page |
+| `envVars` | list of strings | `[]` | adds an `env` block to the Claude Code snippet on the page, and an `env_vars` list to the Codex snippet |
 
 The parser adds two more fields that the front matter does not supply:
 - `tools` - the list that `extractToolsFromCSharp()` finds. See [data pipeline](../site/data-pipeline.md).

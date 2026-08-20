@@ -1,0 +1,163 @@
+---
+permalink: "/install/claude-code.md"
+---
+# Install an AnyMCP server in Claude Code
+
+> Claude Code reads `.mcp.json` in the root directory of the project. It does not read
+> `.codex/config.toml`. For Codex, read {{ site.url }}/install/codex.md.
+
+Do the shared steps first: {{ site.url }}/install.md. That page gives the SDK check, the download,
+and the one build that you do before you register the server. This page gives the last step only.
+
+**Do all the commands on this page in the root directory of the project.** Each path is relative to
+that directory.
+
+Claude Desktop, Cursor, and Windsurf read the same `mcpServers` key, so this page applies to them
+too. Visual Studio and VS Code use `servers` in place of `mcpServers`. The object in the key is the
+same.
+
+## 1. Write the configuration file
+
+Put this text in the `.mcp.json` file in the root directory of the project:
+
+```json
+{
+  "mcpServers": {
+    "<id>": {
+      "type": "stdio",
+      "command": "dotnet",
+      "args": ["run", "./.mcp-servers/<file>.cs", "-v", "q"],
+      "env": {}
+    }
+  }
+}
+```
+
+Commit the file. Then each person who clones the project gets the same server.
+
+The path is relative to the project. It stays correct for each person who clones the project, and on
+each operating system. Because of this, it needs no Windows backslash and no absolute path. Claude
+Code finds the path from its working directory, which is the project directory.
+
+Keep `-v` and `q` as two array elements. They are not one element `"-v q"`. Standard output carries
+the JSON-RPC stream, and without the option the build output can come to that stream.
+
+### The command that writes the same file
+
+`claude mcp add` writes the entry for you:
+
+```
+claude mcp add <id> --scope project -- dotnet run ./.mcp-servers/<file>.cs -v q
+```
+
+The `--scope project` option writes the `.mcp.json` file in the root directory of the project. The
+`--` separator is necessary. Claude Code runs the command that comes after the separator.
+
+The command writes an empty `"env": {}` block. This is the same as the JSON example above. Do not
+change the file.
+
+## 2. Secrets
+
+The `.mcp.json` file is a part of the project and goes into version control. Write the name of a
+variable in that file. Never write a value in it.
+
+Claude Code replaces `${...}` with the value from the environment when it reads the file:
+
+```json
+{
+  "mcpServers": {
+    "<id>": {
+      "type": "stdio",
+      "command": "dotnet",
+      "args": ["run", "./.mcp-servers/<file>.cs", "-v", "q"],
+      "env": {
+        "SOME_KEY": "${SOME_KEY}"
+      }
+    }
+  }
+}
+```
+
+`claude mcp add` writes the same block:
+
+```
+claude mcp add <id> --scope project --env SOME_KEY=${SOME_KEY} -- dotnet run ./.mcp-servers/<file>.cs -v q
+```
+
+## 3. Check the installation
+
+```
+claude mcp list
+claude mcp get <id>
+```
+
+**If an agent does the installation, stop at the `Pending approval` state.** Claude Code connects a
+project server only after a person approves the server. An agent cannot approve the server for the
+user, and an agent cannot start again the client that contains it. Thus
+`Status: ⏸ Pending approval (run claude to approve)` is the correct result. It is not a failure. Do
+not do the command again. Stop here, and tell the user to start Claude Code again and approve the
+prompt, or to use the `/mcp` command.
+
+Claude Code shows this prompt because a repository that you clone must not start a process on your
+computer without your agreement.
+
+After a person starts Claude Code again and approves the server, `claude mcp get <id>` shows the
+status `connected`. Then tell the model to call one of the tools. Make sure that a result comes back.
+
+## The start limit
+
+The first start of a server that has no build cache can be longer than the limit of the client. Do
+the build step from {{ site.url }}/install.md first. You can also make the limit larger. The value is
+in milliseconds:
+
+```
+MCP_TIMEOUT=120000 claude
+```
+
+In PowerShell: `$env:MCP_TIMEOUT = "120000"; claude`
+
+## Remove the server
+
+```
+claude mcp remove <id> --scope project
+```
+
+Then delete the `.mcp-servers/<file>.cs` file.
+
+## Install the server for all the projects of one user
+
+Do this only if the user asks for it. It changes the configuration of the user, and not the
+configuration of the project.
+
+```
+claude mcp add <id> --scope user -- dotnet run <ABSOLUTE_PATH>/<file>.cs -v q
+```
+
+At this scope, the path must be absolute, because each project has a different working directory.
+Keep the file in a permanent directory, for example `~/.mcp-servers/`. Do not move the file, because
+the configuration contains the path. In JSON on Windows, write two backslashes for each backslash of
+an absolute path, for example `C:\Users\you\.mcp-servers\my-server.cs`.
+
+The `--scope local` option is a third choice. It keeps the server in this project and private to
+you. The project then gets no `.mcp.json` entry to commit.
+
+## Keep the two clients apart
+
+- Commit `.mcp.json` for Claude Code.
+- Commit `.codex/config.toml` for Codex.
+- Commit the shared `.mcp-servers/<file>.cs`.
+- Claude Code does not read `.codex/config.toml`.
+- Codex does not read `.mcp.json`.
+
+Do not copy the configuration format of one client into the file of the other client.
+
+## Problems and their causes
+
+| Problem | Cause |
+|---|---|
+| `Pending approval` after `claude mcp add` | This is correct. A person must approve the server. Read step 3. |
+| The connection times out at the first start | You did not build the server. Read {{ site.url }}/install.md. |
+| The client connects, but shows no tool | The SDK is earlier than version 10, or the path in `args` is wrong. |
+| The client log shows a JSON parse error | The `args` list has no `-v` and `q`, and build output came to standard output. |
+| The server operates for you, but not for a different user | That user did not build the server. The build cache is for one user only. |
+| The server stopped after a move of the directory | A relative path moves with the project. An absolute path at user scope does not move. |

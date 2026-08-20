@@ -67,7 +67,7 @@ eleventyComputed:
             </svg>
             View on GitHub
           </a>
-          <button type="button" onclick="copyPrompt(this)" data-prompt="Install the {{ serverData.id }} MCP server into this project. Do not install it for all my projects. Read {{ site.url }}/servers/{{ serverData.id }}/index.md, and obey it exactly for my operating system and my shell. Tell me each file that you change, before you change it." class="inline-flex items-center px-4 py-2 bg-transparent border border-border rounded-md hover:bg-accent hover:text-accent-foreground transition-colors">
+          <button type="button" onclick="copyPrompt(this)" data-prompt="Install the {{ serverData.id }} MCP server into this project. Do not install it for all my projects. Read {{ site.url }}/servers/{{ serverData.id }}/index.md, and obey it exactly for my operating system and my shell. Ask me which MCP client I use, before you write a configuration file. Tell me each file that you change, before you change it." class="inline-flex items-center px-4 py-2 bg-transparent border border-border rounded-md hover:bg-accent hover:text-accent-foreground transition-colors">
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
             </svg>
@@ -159,10 +159,12 @@ eleventyComputed:
             </div>
             <div>
               <h4 class="font-semibold mb-2">3. Configure your MCP client</h4>
-              <p class="text-sm text-muted-foreground mb-2">Add this to <code class="bg-muted px-1 py-0.5 rounded text-xs">.mcp.json</code> in your project root, and commit it. Everyone who clones the project then gets the server.</p>
+              <p class="text-sm text-muted-foreground mb-3">Claude Code and Codex read different files, in different formats. Pick yours, add the snippet to your project root, and commit it. Everyone who clones the project then gets the server. Don't paste one client's format into the other's file.</p>
+
+              <p class="text-sm font-medium mb-2">Claude Code — <code class="bg-muted px-1 py-0.5 rounded text-xs">.mcp.json</code></p>
               <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
                 <p class="text-sm text-blue-800">
-                  <strong>Note:</strong> This example is for Claude Code, Claude Desktop, Cursor, and Windsurf. Visual Studio and VS Code use <code class="bg-blue-100 px-1 py-0.5 rounded text-xs">servers</code> instead of <code class="bg-blue-100 px-1 py-0.5 rounded text-xs">mcpServers</code>.
+                  <strong>Note:</strong> This example also covers Claude Desktop, Cursor, and Windsurf. Visual Studio and VS Code use <code class="bg-blue-100 px-1 py-0.5 rounded text-xs">servers</code> instead of <code class="bg-blue-100 px-1 py-0.5 rounded text-xs">mcpServers</code>.
                 </p>
               </div>
 <pre class="language-json"><code class="language-json">{
@@ -182,12 +184,32 @@ eleventyComputed:
               {%- if serverData.envVars and serverData.envVars.length > 0 %}
               <p class="text-sm text-muted-foreground mt-2">Because this file is committed, it names the variable and never holds the value. Claude Code expands <code class="bg-muted px-1 py-0.5 rounded text-xs">${...}</code> from your environment when it reads the file.</p>
               {%- endif %}
-              <p class="text-sm text-muted-foreground mt-2">The path is relative to the project, so it works for everyone who clones it, on every operating system. <code class="bg-muted px-1 py-0.5 rounded text-xs">-v q</code> is required: standard output carries the JSON-RPC stream, and without it the build output can reach that stream and break the connection.</p>
-              <p class="text-sm text-muted-foreground mt-2">With Claude Code, <code class="bg-muted px-1 py-0.5 rounded text-xs">claude mcp add {{ serverData.id }} --scope project -- dotnet run ./.mcp-servers/{{ serverData.name }} -v q</code> writes the same entry for you. Add <code class="bg-muted px-1 py-0.5 rounded text-xs">--scope user</code> instead, with an absolute path, to install it for every project.</p>
+              <p class="text-sm text-muted-foreground mt-2 mb-4"><code class="bg-muted px-1 py-0.5 rounded text-xs">claude mcp add {{ serverData.id }} --scope project -- dotnet run ./.mcp-servers/{{ serverData.name }} -v q</code> writes the same entry for you. Full details: <a href="/install/claude-code.md" class="underline hover:text-foreground">/install/claude-code.md</a>.</p>
+
+              <p class="text-sm font-medium mb-2">Codex — <code class="bg-muted px-1 py-0.5 rounded text-xs">.codex/config.toml</code></p>
+<pre class="language-toml"><code class="language-toml">[mcp_servers.{{ serverData.id }}]
+command = "dotnet"
+args = [
+    "run",
+    "./.mcp-servers/{{ serverData.name }}",
+    "-v",
+    "q",
+]
+{% if serverData.envVars and serverData.envVars.length > 0 %}env_vars = [{% for envVar in serverData.envVars %}"{{ envVar }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+{% endif %}startup_timeout_sec = 60</code></pre>
+              <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mt-3">
+                <p class="text-sm text-amber-900">
+                  <strong>Codex needs the project trusted.</strong> It ignores a project <code class="bg-amber-100 px-1 py-0.5 rounded text-xs">.codex/config.toml</code> unless your personal <code class="bg-amber-100 px-1 py-0.5 rounded text-xs">~/.codex/config.toml</code> holds <code class="bg-amber-100 px-1 py-0.5 rounded text-xs">[projects.'&lt;absolute path&gt;']</code> with <code class="bg-amber-100 px-1 py-0.5 rounded text-xs">trust_level = "trusted"</code> — and there is no error message when it doesn't. On Windows use the plain <code class="bg-amber-100 px-1 py-0.5 rounded text-xs">C:\Users\...</code> path, never the extended <code class="bg-amber-100 px-1 py-0.5 rounded text-xs">\\?\C:\...</code> form. Don't commit that entry. See <a href="/install/codex.md" class="underline hover:text-amber-950">/install/codex.md</a>.
+                </p>
+              </div>
+              {%- if serverData.envVars and serverData.envVars.length > 0 %}
+              <p class="text-sm text-muted-foreground mt-2">Codex does not expand <code class="bg-muted px-1 py-0.5 rounded text-xs">${...}</code>. Its <code class="bg-muted px-1 py-0.5 rounded text-xs">env</code> table takes literal values, so <code class="bg-muted px-1 py-0.5 rounded text-xs">env_vars</code> names the variable and Codex forwards the value from its own environment.</p>
+              {%- endif %}
+              <p class="text-sm text-muted-foreground mt-2">Both paths are relative to the project, so they work for everyone who clones it, on every operating system. <code class="bg-muted px-1 py-0.5 rounded text-xs">-v q</code> is required in both: standard output carries the JSON-RPC stream, and without it the build output can reach that stream and break the connection.</p>
             </div>
             <div>
               <h4 class="font-semibold mb-2">4. Restart your LLM client</h4>
-              <p class="text-sm text-muted-foreground">Restart your client in the project directory, then check that {{ serverData.id }} shows as connected. Claude Code asks you to approve a project server the first time it reads <code class="bg-muted px-1 py-0.5 rounded text-xs">.mcp.json</code>.</p>
+              <p class="text-sm text-muted-foreground">Restart your client in the project directory, then check that {{ serverData.id }} shows as connected. Claude Code asks you to approve a project server the first time it reads <code class="bg-muted px-1 py-0.5 rounded text-xs">.mcp.json</code>. Codex reads its configuration at startup only, so restart it <em>and</em> open a new chat.</p>
             </div>
           </div>
         </div>

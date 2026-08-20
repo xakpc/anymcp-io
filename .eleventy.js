@@ -50,11 +50,30 @@ export default function(eleventyConfig) {
         check: 'dotnet --list-sdks',
         note: 'The dotnet run <file>.cs command with #:package directives is a feature of the .NET 10 SDK. Each SDK from version 10 operates, and each earlier SDK fails. Check with --list-sdks, and not with --version: a global.json file can select an earlier SDK on a computer that also has version 10. A file-based app writes no bin directory and no obj directory near the file. The SDK keeps the build output in a cache in the temporary directory of the user.',
         scope: 'project',
-        configFile: '.mcp.json in the project root',
         serverDirectory: '.mcp-servers/',
-        // The end state an installing agent should expect, so it does not read the approval
-        // prompt as a failure and retry the registration.
-        postInstall: 'The claude mcp add command reports "Pending approval" for a project server until a person approves the server. For an agent, this is the correct end state: stop there, and tell the user to start the client again and approve the server.'
+        // The server file is shared; the configuration file is not. A consumer that picks the
+        // wrong entry here writes a file its client never reads, and gets no error to go on,
+        // so the manifest names the file, the format, and the page for each client.
+        // postInstall is the end state an installing agent should expect, so it does not read
+        // the last human step as a failure and retry the registration.
+        clients: [
+          {
+            id: 'claude-code',
+            label: 'Claude Code, Claude Desktop, Cursor, Windsurf',
+            configFile: '.mcp.json in the project root',
+            format: 'json',
+            docs: `${base}/install/claude-code.md`,
+            postInstall: 'The claude mcp add command reports "Pending approval" for a project server until a person approves the server. For an agent, this is the correct end state: stop there, and tell the user to start the client again and approve the server.'
+          },
+          {
+            id: 'codex',
+            label: 'Codex',
+            configFile: '.codex/config.toml in the project root',
+            format: 'toml',
+            docs: `${base}/install/codex.md`,
+            postInstall: 'Codex reads a project configuration file only from a trusted project. The trust entry goes in the personal ~/.codex/config.toml of the user, and an agent must not write it. For an agent, the correct end state is this: .codex/config.toml holds the server, and the user has the two steps that remain, the trust entry and a restart with a new chat.'
+          }
+        ]
       },
       servers: (serversArray || []).map(s => ({
         id: s.id,

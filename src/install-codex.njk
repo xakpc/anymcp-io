@@ -1,0 +1,159 @@
+---
+permalink: "/install/codex.md"
+---
+# Install an AnyMCP server in Codex
+
+> Codex reads `.codex/config.toml` in the root directory of the project. It does not read
+> `.mcp.json`. For Claude Code, read {{ site.url }}/install/claude-code.md.
+
+Do the shared steps first: {{ site.url }}/install.md. That page gives the SDK check, the download,
+and the one build that you do before you register the server. This page gives the last step only.
+
+**Do all the commands on this page in the root directory of the project.** Each path is relative to
+that directory.
+
+Codex needs three things, and all three are necessary:
+
+1. The project configuration file `.codex/config.toml`. You write it.
+2. A trust entry for the project, in the personal `~/.codex/config.toml` of the user. The user writes
+   it.
+3. A restart of Codex, and a new chat.
+
+## 1. Write the project configuration file
+
+Put this text in the `.codex/config.toml` file in the root directory of the project:
+
+```toml
+[mcp_servers.<id>]
+command = "dotnet"
+args = [
+    "run",
+    "./.mcp-servers/<file>.cs",
+    "-v",
+    "q",
+]
+startup_timeout_sec = 60
+```
+
+Commit the file. Then each person who clones the project gets the same server.
+
+The key is `mcp_servers`, with an underscore. The `mcpServers` key of `.mcp.json` does not operate
+here.
+
+Keep `-v` and `q` as two array elements. They are not one element `"-v q"`. Standard output carries
+the JSON-RPC stream, and without the option the build output can come to that stream.
+
+`startup_timeout_sec = 60` gives the server time to start. The default limit is shorter, and a first
+start can be longer than the default limit.
+
+## 2. Ask the user for the trust entry
+
+**Codex loads a project configuration file only from a trusted project.** Without a trust entry,
+Codex ignores `.codex/config.toml`, and the server does not appear. There is no error message.
+
+The trust entry goes in the personal `~/.codex/config.toml` of the user, and not in the project:
+
+```toml
+[projects.'C:\Users\USERNAME\path\to\repository']
+trust_level = "trusted"
+```
+
+**On Windows, use the normal absolute path.** Do not use the extended Windows path form
+`\\?\C:\...`. The extended form can be different from the workspace path, and Codex then ignores
+`.codex/config.toml`.
+
+On macOS and Linux, the path is the normal absolute path of the project, for example
+`[projects.'/home/you/path/to/repository']`.
+
+**Do not commit the trust entry.** It names a directory of one computer, and it gives a permission of
+one person.
+
+**An agent must not write this file.** It is the configuration of the user, and it is outside the
+project. Tell the user the exact lines to add, and stop.
+
+## 3. Tell the user to start Codex again
+
+Codex reads the configuration when it starts. After you add or change an MCP configuration, the user
+must start Codex again and open a new chat. An old chat keeps the old server list.
+
+**An agent cannot do this step.** An agent cannot restart the client that contains it. So the correct
+end state for an agent is this: `.codex/config.toml` exists and holds the server, and the user has
+the two steps that remain. Stop there. It is not a failure.
+
+After the restart, ask the model to list its tools, or to call one of the tools of the server. Make
+sure that a result comes back.
+
+## Secrets
+
+The `.codex/config.toml` file is a part of the project and goes into version control. Never write a
+value in it.
+
+Codex does not replace `${...}`. The `env` table holds literal values only:
+
+```toml
+# Do not do this in a committed file. The value is text, and Codex writes no environment value here.
+env = { SOME_KEY = "the-value-in-clear-text" }
+```
+
+Use `env_vars` instead. It names a variable, and Codex sends the value from its own environment to
+the server:
+
+```toml
+[mcp_servers.<id>]
+command = "dotnet"
+args = [
+    "run",
+    "./.mcp-servers/<file>.cs",
+    "-v",
+    "q",
+]
+env_vars = ["SOME_KEY"]
+startup_timeout_sec = 60
+```
+
+Then the user sets `SOME_KEY` in the shell that starts Codex, and the committed file holds the name
+only.
+
+## Remove the server
+
+Delete the `[mcp_servers.<id>]` table from `.codex/config.toml`. Then delete the
+`.mcp-servers/<file>.cs` file. Tell the user to start Codex again.
+
+## Install the server for all the projects of one user
+
+Do this only if the user asks for it, or if the user does not want a trust entry. It changes the
+configuration of the user, and not the configuration of the project.
+
+```
+codex mcp add <id> -- dotnet run <ABSOLUTE_PATH>/<file>.cs -v q
+```
+
+The command writes the server in the personal `~/.codex/config.toml` of the user. The server is then
+available in each project of that person, and the project gets no file to commit.
+
+**Do not use this command for the normal project installation.** It makes a user registration, and
+the project then has two sources of truth: the committed `.codex/config.toml` that Codex ignores, and
+the personal file that operates. At this scope the path must be absolute, because each project has a
+different working directory. Do not move the file, because the configuration contains the path.
+
+## Keep the two clients apart
+
+- Commit `.codex/config.toml` for Codex.
+- Commit `.mcp.json` for Claude Code.
+- Commit the shared `.mcp-servers/<file>.cs`.
+- Codex does not read `.mcp.json`.
+- Claude Code does not read `.codex/config.toml`.
+
+Do not copy the configuration format of one client into the file of the other client.
+
+## Problems and their causes
+
+| Problem | Cause |
+|---|---|
+| Codex shows no server after a restart | The project has no trust entry in `~/.codex/config.toml`. Read step 2. |
+| The trust entry exists, and Codex still shows no server | The trust key uses the extended path form `\\?\C:\...`. Write the normal absolute path. |
+| The old chat shows no new tool | Codex reads the configuration at the start. Open a new chat. |
+| The server starts, and then stops | The `startup_timeout_sec` value is too small, or you did not build the server. Read {{ site.url }}/install.md. |
+| Codex reports a parse error on the stream | The `args` list has no `-v` and `q`, and build output came to standard output. |
+| The key `mcpServers` gives no server | Codex uses `mcp_servers`, with an underscore. |
+| The tool reports a missing key | `env` holds literal text and replaces no variable. Use `env_vars`. |

@@ -7,15 +7,16 @@ permalink: "/install.md"
 > MCP client to `dotnet run <file>.cs -v q`. There is no project file, no build step of your own,
 > and no container. The .NET 10 SDK is the only requirement.
 
-This page gives the steps that are the same for each server. Each server also has its own page with
-the exact commands for that server. Start at that page:
+This page gives the steps that are the same for each server and for each MCP client. The last step,
+the client configuration, is different for each client. This page sends you to the page of your
+client. Each server also has its own page with the exact values for that server. Start at that page:
 
 - Catalog index for agents: {{ site.url }}/llms.txt
 - Catalog as JSON: {{ site.url }}/servers.json
 - One server: {{ site.url }}/servers/<id>/index.md
 
 **Install the server into the project. This is the default.** Put the server file in the project.
-Put the configuration in the `.mcp.json` file of the project. These steps write no file outside the
+Put the configuration in the configuration file of the project. These steps write no file outside the
 project directory, and they change no other project on the computer. Install the server for the user
 only if the user asks for it.
 
@@ -65,6 +66,8 @@ Invoke-WebRequest -Uri "{{ site.url }}/servers/<id>/<id>.cs" -OutFile ".mcp-serv
 
 Commit the file. The file is the full server. A person who clones the project needs no other file.
 
+Each client starts the same file. The server file is shared, and the configuration file is not.
+
 ## Step 2. Build one time, before you register the server
 
 Do this command in the root directory of the project:
@@ -72,6 +75,8 @@ Do this command in the root directory of the project:
 ```
 dotnet build .mcp-servers/<file>.cs -v q
 ```
+
+Keep `-v` and `q` as separate arguments.
 
 **A correct build prints no text.** The `-v q` option removes the summary, and there is no
 `Build succeeded` line. Empty output and exit code 0 are the correct result. Do not do the command
@@ -90,103 +95,28 @@ operating systems. The name of the cache directory contains the name of the file
 content of the file. Because of this, `.gitignore` needs no new line, and a `git status` command
 after a build shows only the `.cs` file that you added.
 
-For Claude Code, you can also increase the start limit. The value is in milliseconds:
+## Step 3. MCP client setup
 
-```
-MCP_TIMEOUT=120000 claude
-```
+The catalog supports Claude Code and Codex. They read different configuration files, and the two
+formats are not the same. **Do not copy the configuration format of one client into the file of the
+other client.**
 
-In PowerShell: `$env:MCP_TIMEOUT = "120000"; claude`
+| Client | Configuration file | Read this page |
+|---|---|---|
+| Claude Code, Claude Desktop, Cursor, Windsurf | `.mcp.json` in the project root | {{ site.url }}/install/claude-code.md |
+| Codex | `.codex/config.toml` in the project root | {{ site.url }}/install/codex.md |
 
-## Step 3. Register the server in the project
+Visual Studio and VS Code also read a JSON file, with the key `servers` in place of `mcpServers`.
+Read the Claude Code page for that shape.
 
-### Claude Code
+**Ask the user which client they use, before you write a configuration file.** Do not guess. A file
+for the wrong client gives a client with no server, and no error message.
 
-Do this command in the root directory of the project:
+Both files belong to the project, and both go into version control. The `.mcp-servers/<file>.cs`
+file is shared, and both clients start it with the same command.
 
-```
-claude mcp add <id> --scope project -- dotnet run ./.mcp-servers/<file>.cs -v q
-```
-
-The `--scope project` option writes the `.mcp.json` file in the root directory of the project.
-Commit that file. Then each person who clones the project gets the same server.
-
-The `--` separator is necessary. Claude Code runs the command that comes after the separator.
-
-The command writes an empty `"env": {}` block. The JSON example below does not show that block. The
-two forms are the same. Do not change the file.
-
-To give a secret to the server, write the name of the variable before the `--` separator. Claude
-Code replaces `${...}` with the value from the environment, and the committed file has no value:
-
-```
-claude mcp add <id> --scope project --env SOME_KEY=${SOME_KEY} -- dotnet run ./.mcp-servers/<file>.cs -v q
-```
-
-### A client that reads a JSON configuration file
-
-Claude Code, Claude Desktop, Cursor, and Windsurf use the `mcpServers` key. Put this text in the
-`.mcp.json` file in the root directory of the project:
-
-```json
-{
-  "mcpServers": {
-    "<id>": {
-      "type": "stdio",
-      "command": "dotnet",
-      "args": ["run", "./.mcp-servers/<file>.cs", "-v", "q"]
-    }
-  }
-}
-```
-
-Visual Studio and VS Code use `servers` in place of `mcpServers`. The object in the key is the same.
-
-The path is relative to the project. It stays correct for each person who clones the project, and on
-each operating system. Because of this, it needs no Windows backslash and no absolute path. The
-client finds the path from its working directory, which is the project directory.
-
-## Step 4. Check the installation
-
-```
-claude mcp list
-claude mcp get <id>
-```
-
-**If an agent does the installation, stop at the `Pending approval` state.** Claude Code connects a
-project server only after a person approves the server. An agent cannot approve the server for the
-user, and an agent cannot start again the client that contains it. Thus
-`Status: ⏸ Pending approval (run claude to approve)` is the correct result. It is not a failure. Do
-not do the command again. Stop here, and tell the user to start Claude Code again and approve the
-prompt, or to use the `/mcp` command.
-
-Claude Code shows this prompt because a repository that you clone must not start a process on your
-computer without your agreement.
-
-**Do not test the server manually.** If you send JSON-RPC lines in one block, the server gives no
-output. Standard input comes to the end of the file before the host answers `initialize`, and the
-log shows only `transport completed reading messages`. This looks like a defective server, but the
-server is correct. The first client start is the test.
-
-After a person starts the client again and approves the server, the `claude mcp get <id>` command
-shows the status `connected`. Then tell the model to call one of the tools. Make sure that a result
-comes back. A client that has no CLI shows the same list in its own settings.
-
-## Install the server for all the projects of one user
-
-Do this only if the user asks for it.
-
-```
-claude mcp add <id> --scope user -- dotnet run <ABSOLUTE_PATH>/<file>.cs -v q
-```
-
-At this scope, the path must be absolute, because each project has a different working directory.
-Keep the file in a permanent directory, for example `~/.mcp-servers/`. Do not move the file, because
-the configuration contains the path. In JSON on Windows, write two backslashes for each backslash of
-an absolute path, for example `C:\Users\you\.mcp-servers\my-server.cs`.
-
-The `--scope local` option is a third choice. It keeps the server in this project and private to
-you. The project then gets no `.mcp.json` entry to commit.
+Each client page also gives the end state that an agent can reach. An agent cannot start the client
+again, so each page names the last steps that only a person can do.
 
 ## Why the `-v q` option is necessary
 
@@ -194,8 +124,15 @@ Stdio transport uses standard output for the JSON-RPC messages. Without `-v q`, 
 command can write build output to standard output. One such line breaks the protocol stream. The
 client then reports a parse error, or shows no tool.
 
-Keep `-v q` in each configuration. It is two array elements, `"-v"` and `"q"`. It is not one element
+Keep `-v q` in each configuration. It is two elements, `"-v"` and `"q"`. It is not one element
 `"-v q"`.
+
+## Do not test the server manually
+
+If you send JSON-RPC lines in one block, the server gives no output. Standard input comes to the end
+of the file before the host answers `initialize`, and the log shows only
+`transport completed reading messages`. This looks like a defective server, but the server is
+correct. The first client start is the test.
 
 ## Tool names
 
@@ -208,27 +145,24 @@ The page of a server gives the name of each key that the server needs. Each AnyM
 lists its tools when no key is set. The server needs a key only when the model calls a tool. A
 failure at the start is thus never a missing key.
 
-The `.mcp.json` file is a part of the project and goes into version control. Write the name of a
-variable in that file. Never write a value in it.
+A configuration file is a part of the project and goes into version control. Write the name of a
+variable in that file. Never write a value in it. The two clients name a variable in different ways,
+and each client page gives the shape.
 
 ## Remove a server
 
-```
-claude mcp remove <id> --scope project
-```
-
-Then delete the `.mcp-servers/<file>.cs` file.
+Delete the entry of the server from the configuration file of your client, and then delete the
+`.mcp-servers/<file>.cs` file. Each client page gives the exact command.
 
 ## Problems and their causes
 
 | Problem | Cause |
 |---|---|
-| `Pending approval` after `claude mcp add` | This is correct. A person must approve the server. Read step 4. |
 | A command fails on a path that contains `.mcp-servers` two times | The shell is in the `.mcp-servers/` directory. Go back to the root directory of the project. |
 | `dotnet build` prints no text | This is correct. The `-v q` option removes the summary. Look at the exit code. |
 | The connection times out at the first start | You did not build the server. Do step 2, then register the server again. |
-| The client connects, but shows no tool | The SDK is earlier than version 10, or the path in `args` is wrong. |
-| The client log shows a JSON parse error | The `args` list has no `-v q`, and build output came to standard output. |
+| The client connects, but shows no tool | The SDK is earlier than version 10, or the path in the arguments is wrong. |
+| The client log shows a JSON parse error | The argument list has no `-v` and `q`, and build output came to standard output. |
 | `dotnet: command not found` | The .NET 10 SDK is not installed, or it is not on the PATH. |
 | The server operates for you, but not for a different user | That user did not do step 2. The build cache is for one user only. |
-| The server stopped after a move of the directory | A relative path moves with the project. An absolute path at user scope does not move. |
+| The client shows no server, and gives no error | You wrote the file of the other client. Read the page of your client in step 3. |

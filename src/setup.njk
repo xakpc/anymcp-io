@@ -51,7 +51,7 @@ showNavigation: false
       <p class="text-muted-foreground mb-4">What you need before getting started</p>
       <ul class="space-y-2 text-slate-700">
         <li>• The .NET 10 SDK, or later. Check with <code class="bg-muted px-1 py-0.5 rounded text-xs">dotnet --list-sdks</code>; one line must show 10 or higher. Running a <code class="bg-muted px-1 py-0.5 rounded text-xs">.cs</code> file directly is a .NET 10 feature, so earlier SDKs fail. Use <code class="bg-muted px-1 py-0.5 rounded text-xs">--list-sdks</code> rather than <code class="bg-muted px-1 py-0.5 rounded text-xs">--version</code>, which reports the SDK a <code class="bg-muted px-1 py-0.5 rounded text-xs">global.json</code> selects.</li>
-        <li>• An LLM client that supports MCP (Claude Code, Claude Desktop, Cursor, Visual Studio, VS Code)</li>
+        <li>• An LLM client that supports MCP (Claude Code, Codex, Claude Desktop, Cursor, Visual Studio, VS Code)</li>
         <li>• A single .cs file from the catalog, saved in your project</li>
       </ul>
     </div>
@@ -63,15 +63,17 @@ showNavigation: false
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
         </svg>
-        Basic Configuration
+        MCP Client Setup
       </h2>
-      <p class="text-muted-foreground mb-4">Put the server file in <code class="bg-muted px-1 py-0.5 rounded text-xs">.mcp-servers/</code> in your project, then create <code class="bg-muted px-1 py-0.5 rounded text-xs">.mcp.json</code> in the project root. Commit both, and everyone who clones the project gets the server. The path is relative, so it works on every operating system.</p>
+      <p class="text-muted-foreground mb-4">Put the server file in <code class="bg-muted px-1 py-0.5 rounded text-xs">.mcp-servers/</code> in your project. The file is shared by every client; the configuration file is not. Claude Code reads <code class="bg-muted px-1 py-0.5 rounded text-xs">.mcp.json</code>, Codex reads <code class="bg-muted px-1 py-0.5 rounded text-xs">.codex/config.toml</code>, and neither reads the other. Commit the server file and your client's config, and everyone who clones the project gets the server. The path is relative, so it works on every operating system.</p>
+
+      <h3 class="font-semibold mb-2">Claude Code — <code class="bg-muted px-1 py-0.5 rounded text-xs">.mcp.json</code></h3>
       <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
         <p class="text-sm text-blue-800">
-          <strong>Note:</strong> This example is for Claude Code, Claude Desktop, Cursor, and Windsurf. Visual Studio and VS Code use <code class="bg-blue-100 px-1 py-0.5 rounded text-xs">servers</code> instead of <code class="bg-blue-100 px-1 py-0.5 rounded text-xs">mcpServers</code>.
+          <strong>Note:</strong> This example also covers Claude Desktop, Cursor, and Windsurf. Visual Studio and VS Code use <code class="bg-blue-100 px-1 py-0.5 rounded text-xs">servers</code> instead of <code class="bg-blue-100 px-1 py-0.5 rounded text-xs">mcpServers</code>.
         </p>
       </div>
-      <div class="relative">
+      <div class="relative mb-6">
         <pre class="language-json"><code class="language-json">{
   "mcpServers": {
     "MyUtilityServer": {
@@ -87,6 +89,33 @@ showNavigation: false
           </svg>
         </button>
       </div>
+      <p class="text-sm text-muted-foreground mb-6">Or let the CLI write it: <code class="bg-muted px-1 py-0.5 rounded text-xs">claude mcp add MyUtilityServer --scope project -- dotnet run ./.mcp-servers/mcp-server.cs -v q</code>. Full details at <a href="/install/claude-code.md" class="underline hover:text-foreground">/install/claude-code.md</a>.</p>
+
+      <h3 class="font-semibold mb-2">Codex — <code class="bg-muted px-1 py-0.5 rounded text-xs">.codex/config.toml</code></h3>
+      <div class="relative">
+        <pre class="language-toml"><code class="language-toml">[mcp_servers.MyUtilityServer]
+command = "dotnet"
+args = [
+    "run",
+    "./.mcp-servers/mcp-server.cs",
+    "-v",
+    "q",
+]
+startup_timeout_sec = 60</code></pre>
+        <button onclick="copyBlock(this)" class="absolute top-2 right-2 inline-flex items-center px-3 py-1.5 text-xs font-medium bg-slate-700 text-slate-100 rounded hover:bg-slate-600 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mt-4">
+        <p class="text-sm text-amber-900">
+          <strong>Codex loads a project config only from a trusted project.</strong> Add the project to your personal <code class="bg-amber-100 px-1 py-0.5 rounded text-xs">~/.codex/config.toml</code>, and don't commit that entry:
+        </p>
+<pre class="language-toml mt-2"><code class="language-toml">[projects.'C:\Users\USERNAME\path\to\repository']
+trust_level = "trusted"</code></pre>
+        <p class="text-sm text-amber-900 mt-2">On Windows use the plain absolute path. The extended <code class="bg-amber-100 px-1 py-0.5 rounded text-xs">\\?\C:\...</code> form may not match the workspace path, and then Codex silently ignores <code class="bg-amber-100 px-1 py-0.5 rounded text-xs">.codex/config.toml</code>. Don't run <code class="bg-amber-100 px-1 py-0.5 rounded text-xs">codex mcp add</code> for a project install — it registers the server globally instead. Full details at <a href="/install/codex.md" class="underline hover:text-amber-950">/install/codex.md</a>.</p>
+      </div>
     </div>
 
     <!-- Environment Variables -->
@@ -96,6 +125,11 @@ showNavigation: false
       <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
         <p class="text-sm text-blue-800">
           <strong>Note:</strong> The <code class="bg-blue-100 px-1 py-0.5 rounded text-xs">inputs</code> block below belongs to Visual Studio and VS Code, which also use <code class="bg-blue-100 px-1 py-0.5 rounded text-xs">servers</code>. Claude Code, Claude Desktop, Cursor, and Windsurf use <code class="bg-blue-100 px-1 py-0.5 rounded text-xs">mcpServers</code>, and expand <code class="bg-blue-100 px-1 py-0.5 rounded text-xs">${MY_KEY}</code> from the environment instead.
+        </p>
+      </div>
+      <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
+        <p class="text-sm text-amber-900">
+          <strong>Codex is different.</strong> Its <code class="bg-amber-100 px-1 py-0.5 rounded text-xs">env</code> table takes literal values and expands nothing, so <code class="bg-amber-100 px-1 py-0.5 rounded text-xs">${MY_KEY}</code> would be stored as that text. Use <code class="bg-amber-100 px-1 py-0.5 rounded text-xs">env_vars = ["MY_KEY"]</code> instead: it names the variable, and Codex forwards the value from its own environment. The committed file then holds no secret.
         </p>
       </div>
       <div class="space-y-6">
@@ -205,13 +239,13 @@ ENTRYPOINT ["dotnet", "run", "mcp-server.cs", "-v", "q"]</code></pre>
           <span class="flex-shrink-0 w-6 h-6 bg-cyan-800 text-white rounded-full flex items-center justify-center text-sm font-bold">
             3
           </span>
-          <span>Create .mcp.json in the project root with the configuration above, and commit it</span>
+          <span>Create your client's config in the project root and commit it — .mcp.json for Claude Code, .codex/config.toml for Codex</span>
         </li>
         <li class="flex gap-3">
           <span class="flex-shrink-0 w-6 h-6 bg-cyan-800 text-white rounded-full flex items-center justify-center text-sm font-bold">
             4
           </span>
-          <span>Restart your LLM client in the project directory, and start using the tools</span>
+          <span>Restart your LLM client in the project directory, and start using the tools. Codex also needs the project trusted in your ~/.codex/config.toml, and a new chat after the restart</span>
         </li>
       </ol>
     </div>

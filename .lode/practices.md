@@ -98,8 +98,8 @@ behavior when you change the parser. See [data pipeline](site/data-pipeline.md).
 
 The machine-readable outputs are procedures that a coding agent obeys without a person. Write them in
 ASD-STE100 Simplified Technical English. This applies to `src/llms.njk`, `src/agent-install.njk`,
-`src/server-md.njk`, the `runtime` strings in the `serversManifest` filter in `.eleventy.js`, and the
-`data-prompt` text in `src/servers.njk`.
+`src/install-claude-code.njk`, `src/install-codex.njk`, `src/server-md.njk`, the `runtime` strings in
+the `serversManifest` filter in `.eleventy.js`, and the `data-prompt` text in `src/servers.njk`.
 
 The rules that change the text most:
 
@@ -120,6 +120,24 @@ rule does not apply to them today. See [front-matter schema](catalog/front-matte
 
 The pages for a person, `src/index.njk`, `src/setup.njk`, and the HTML part of `src/servers.njk`,
 keep their usual English.
+
+## Give each MCP client its own page
+
+An MCP client gets one page under `/install/`. Put each client-specific instruction on that page:
+the configuration file, the format, the way to name a secret, the way to remove the server, and the
+end state that an agent can reach. Do not add a second client section to a page that a different
+client also reads.
+
+`/install.md` holds only the steps that are the same for every client, and a table that sends the
+reader to the correct page. `/servers/{id}/index.md` holds the values of one server, and the same
+table. A machine-readable page therefore names one client one time, and a change to one client
+touches one file.
+
+The two pages for a person, `src/setup.njk` and `src/servers.njk`, are the exception. They show both
+shapes together, because a person chooses a client on the page and must not go to a second page.
+
+To add a client, read [MCP clients](site/mcp-clients.md). It gives the full list of the places to
+change.
 
 ## Test a change with the local server
 

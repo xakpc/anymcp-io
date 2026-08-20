@@ -9,8 +9,11 @@ Follow these steps to add a server to the catalog.
    test file, workflow, or configuration needs a change. See
    [automated testing](automated-testing.md).
 5. Run `npm run serve`, and open http://localhost:8080/servers/my-server/.
-6. Test the server with a real LLM client through `.mcp.json`.
-7. Send a pull request. The same three test layers run in GitHub Actions.
+6. Send a pull request. The same three test layers run in GitHub Actions.
+
+The harness is the test. It builds the server and starts it, and it reads the tool list from the
+wire. No step needs an LLM client, and this repository holds no client configuration. See
+[automated testing](automated-testing.md).
 
 ## The standard skeleton
 
@@ -75,33 +78,29 @@ public static class MyTools
 - Read secrets from environment variables. Do not put a key in the file. List each variable in
   `envVars`, so the page shows the correct `.mcp.json` snippet.
 
-## Local test configuration
+## This repository has no client configuration
 
-`.mcp.json` in the repository root tells the LLM client how to start each server:
+There is no `.mcp.json` and no `.codex/config.toml` here, and there must not be one. This repository
+is the catalog, and not a project that consumes the catalog. The servers live in `mcp/`, the test
+harness starts them directly, and no LLM client needs to know about them.
 
-```json
-{
-  "mcpServers": {
-    "my-server": {
-      "type": "stdio",
-      "command": "dotnet",
-      "args": ["run", ".\\mcp\\my-server.cs", "-v", "q"]
-    }
-  }
-}
+The two configuration files belong to the user who installs a server. The site publishes the
+instructions for that user, at `/install.md`, `/install/claude-code.md`, `/install/codex.md`, and
+`/servers/{id}/index.md`. Those pages install a server **into the project of the user**: the file
+goes in `.mcp-servers/`, and the argument list holds the relative path `./.mcp-servers/{id}.cs`.
+That path is correct there, and it is not the path of this repository. See
+[MCP clients](../site/mcp-clients.md) and [agent endpoints](../site/agent-endpoints.md).
+
+`.gitignore` holds a `.mcp.json` line. It is a guard, and not a description of a file that exists.
+
+To run a catalog server by hand, no configuration file is necessary:
+
+```bash
+dotnet run mcp/my-server.cs -v q
 ```
 
-The `-v q` argument makes `dotnet run` quiet. Without it, the build output can reach stdout and disturb
-the client. It is two array elements, `"-v"` and `"q"`, and not one element `"-v q"`. In JSON each
-backslash of a Windows path is doubled.
-
-`.mcp.json` is not in git, and it does not list every server. Add your entry by hand.
-
-The site publishes the same instructions for a user, at `/install.md` and `/servers/{id}/index.md`.
-Keep the two the same. Those pages install a server **into a project**: the file goes in
-`.mcp-servers/` in the project of the user, and `args` holds the relative path
-`./.mcp-servers/{id}.cs`. This repository is such a project, so its own `.mcp.json` has the same
-shape. See [agent endpoints](../site/agent-endpoints.md).
+The `-v q` argument makes `dotnet run` quiet. Without it, the build output can reach stdout and
+disturb the protocol stream. It is two arguments, `-v` and `q`, and not one argument `-v q`.
 
 `dotnet build` and `dotnet run` add no `bin` or `obj` directory next to a `.cs` file. A file-based
 app is not a project, so the SDK keeps the output in a cache of the user, under

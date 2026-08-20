@@ -11,11 +11,38 @@ project:
 mkdir -p .mcp-servers
 curl -fsSL -o .mcp-servers/date-times-mcp.cs https://anymcp.net/servers/date-times-mcp/date-times-mcp.cs
 dotnet build .mcp-servers/date-times-mcp.cs -v q
+```
+
+The server file is shared by every MCP client. The configuration file is not — pick yours:
+
+**Claude Code** (also Claude Desktop, Cursor, Windsurf) reads `.mcp.json`:
+
+```bash
 claude mcp add date-times-mcp --scope project -- dotnet run ./.mcp-servers/date-times-mcp.cs -v q
 ```
 
-Commit `.mcp-servers/date-times-mcp.cs` and `.mcp.json`, and everyone who clones the project gets
-the server. The path is relative, so it works on every operating system.
+**Codex** reads `.codex/config.toml`:
+
+```toml
+[mcp_servers.date-times-mcp]
+command = "dotnet"
+args = [
+    "run",
+    "./.mcp-servers/date-times-mcp.cs",
+    "-v",
+    "q",
+]
+startup_timeout_sec = 60
+```
+
+Codex loads a project config only from a trusted project, so your personal `~/.codex/config.toml`
+also needs `[projects.'<absolute path>']` with `trust_level = "trusted"`. On Windows use the plain
+`C:\Users\...` path, not the extended `\\?\C:\...` form — Codex silently ignores the project config
+when the two don't match. Don't commit that trust entry, and don't run `codex mcp add` for a project
+install: it registers the server globally instead. Full steps at <https://anymcp.net/install/codex.md>.
+
+Commit `.mcp-servers/date-times-mcp.cs` and your client's config, and everyone who clones the project
+gets the server. The path is relative, so it works on every operating system.
 
 The build adds no `bin` or `obj` directory to the project: a file-based app is not a project, so the
 SDK caches the compiled output under your temp directory. `.gitignore` needs no new line.
@@ -32,6 +59,8 @@ each client, is at <https://anymcp.net/install.md>. Every server also has its ow
 |---|---|
 | Catalog index for agents | <https://anymcp.net/llms.txt> |
 | Catalog as JSON | <https://anymcp.net/servers.json> |
+| Claude Code setup | <https://anymcp.net/install/claude-code.md> |
+| Codex setup | <https://anymcp.net/install/codex.md> |
 | One server, for an agent | `https://anymcp.net/servers/<id>/index.md` |
 | One server, raw C# | `https://anymcp.net/servers/<id>/<id>.cs` |
 
@@ -118,7 +147,9 @@ src/
 ├── server-md.njk         # /servers/{id}/index.md, for agents
 ├── server-raw.njk        # /servers/{id}/{id}.cs, the raw source
 ├── servers-json.njk      # /servers.json
-├── agent-install.njk     # /install.md
+├── agent-install.njk     # /install.md, the steps every client shares
+├── install-claude-code.njk  # /install/claude-code.md
+├── install-codex.njk     # /install/codex.md
 ├── llms.njk              # /llms.txt
 ├── robots.njk            # /robots.txt
 ├── sitemap.njk           # /sitemap.xml

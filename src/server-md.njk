@@ -94,9 +94,10 @@ This server reads these variables:
 - `{{ envVar | safe }}`
 {%- endfor %}
 
-Ask the user for each value. Do not make a value, and do not write a value in the `.mcp.json` file.
-That file is a part of the project and goes into version control. Write the name of the variable in
-the file, and keep the value in the environment.
+Ask the user for each value. Do not make a value, and do not write a value in the configuration file
+of the client. That file is a part of the project and goes into version control. Write the name of
+the variable in the file, and keep the value in the environment. The two clients name a variable in
+different ways, and the page of each client gives the shape.
 
 The server starts and lists its tools when no value is set. The server needs a key only when the
 model calls a tool. A failure at the start is thus never a missing key.
@@ -104,75 +105,43 @@ model calls a tool. A failure at the start is thus never a missing key.
 
 ## {% if serverData.envVars.length %}4{% else %}3{% endif %}. Register the server in this project
 
-For Claude Code, do this command in the root directory of the project:
+Each MCP client reads a different configuration file. **Ask the user which client they use, before
+you write a file.** Do not guess. A file for the wrong client gives a client with no server, and no
+error message.
 
-```
-claude mcp add {{ serverData.id }} --scope project{% if serverData.envVars.length %}{% for envVar in serverData.envVars %} --env {{ envVar | safe }}={{ "${" }}{{ envVar | safe }}{{ "}" }}{% endfor %}{% endif %} -- dotnet run ./.mcp-servers/{{ serverData.name }} -v q
-```
+These are the values for this server. They are the same for each client:
 
-The `--scope project` option writes the `.mcp.json` file in the root directory of the project.
-Commit that file. Then each person who clones the project gets the server. The `--` separator is
-necessary, because the command that comes after it contains the `-v q` option.
-{% if not serverData.envVars.length %}
-The command writes an empty `"env": {}` block. The JSON example below does not show that block. The
-two forms are the same. Do not change the file.
+- Server id: `{{ serverData.id }}`
+- Server file: `./.mcp-servers/{{ serverData.name }}`
+- Command: `dotnet`
+- Arguments: `run ./.mcp-servers/{{ serverData.name }} -v q`
+{%- if serverData.envVars.length %}
+- Environment variables: {% for envVar in serverData.envVars %}`{{ envVar | safe }}`{% if not loop.last %}, {% endif %}{% endfor %}
 {%- endif %}
-
-Claude Code, Claude Desktop, Cursor, and Windsurf read a JSON configuration file, and they use the
-`mcpServers` key. Put this text in the `.mcp.json` file in the root directory of the project:
-
-```json
-{
-  "mcpServers": {
-    "{{ serverData.id }}": {
-      "type": "stdio",
-      "command": "dotnet",
-      "args": ["run", "./.mcp-servers/{{ serverData.name }}", "-v", "q"]{% if serverData.envVars.length %},
-      "env": {
-{%- for envVar in serverData.envVars %}
-        "{{ envVar | safe }}": "{{ "${" }}{{ envVar | safe }}{{ "}" }}"{% if not loop.last %},{% endif %}
-{%- endfor %}
-      }{% endif %}
-    }
-  }
-}
-```
-
-Visual Studio and VS Code use `servers` in place of `mcpServers`. The object in the key is the same.
 
 The path is relative to the project. It stays correct for each person who clones the project, and on
 each operating system. The client finds the path from its working directory, which is the project
-directory. A client that starts a server from a different directory needs an absolute path.
-{%- if serverData.envVars.length %}
+directory.
 
-Claude Code replaces `${...}` with the value from the environment when it reads the `.mcp.json`
-file. The file thus contains the name of the variable and no secret. A client that does not replace
-a variable needs the value in the file. Keep such a configuration out of version control.
-{%- endif %}
+Now read the page of the client, and obey it:
 
-## {% if serverData.envVars.length %}5{% else %}4{% endif %}. Check the installation
+| Client | Configuration file | Read this page |
+|---|---|---|
+| Claude Code, Claude Desktop, Cursor, Windsurf | `.mcp.json` in the project root | {{ site.url }}/install/claude-code.md |
+| Codex | `.codex/config.toml` in the project root | {{ site.url }}/install/codex.md |
 
-```
-claude mcp list
-claude mcp get {{ serverData.id }}
-```
-
-**If an agent does the installation, stop at the `Pending approval` state.** Claude Code connects a
-project server only after a person approves the server. An agent cannot approve the server for the
-user, and an agent cannot start again the client that contains it. Thus
-`Status: ⏸ Pending approval (run claude to approve)` is the correct result. It is not a failure. Do
-not do the command again. Stop here, and tell the user to start Claude Code again and approve the
-prompt, or to use the `/mcp` command.
+Each client page gives the shape of the file, the way to name a secret, the way to remove the server,
+and the end state that you can reach. Commit the configuration file. Then each person who clones the
+project gets the server.
 
 **Do not test the server manually.** If you send JSON-RPC lines in one block, the server gives no
 output. Standard input comes to the end of the file before the host answers `initialize`, and the
 log shows only `transport completed reading messages`. This looks like a defective server, but the
 server is correct. The first client start is the test.
 
-After a person starts the client again in the project directory and approves the server,
-`{{ serverData.id }}` shows the status `connected`, with {{ serverData.tools.length }} tool(s). Then
-tell the model to call `{{ serverData.tools[0].name | wireName | safe }}`, and make sure that a
-result comes back.
+After a person starts the client again in the project directory, `{{ serverData.id }}` gives
+{{ serverData.tools.length }} tool(s). Then tell the model to call
+`{{ serverData.tools[0].name | wireName | safe }}`, and make sure that a result comes back.
 
 ## Tools
 
@@ -183,24 +152,20 @@ A `tools/list` response contains the wire name. The catalog page shows the C# na
 
 ## Remove the server
 
-```
-claude mcp remove {{ serverData.id }} --scope project
-```
-
-Then delete the `.mcp-servers/{{ serverData.name }}` file.
+Delete the entry of `{{ serverData.id }}` from the configuration file of your client. The page of
+the client gives the command. Then delete the `.mcp-servers/{{ serverData.name }}` file.
 
 ## Install the server for all the projects of one user
 
 Do this only if the user asks for it. It changes the configuration of the user, and not the
-configuration of the project.
+configuration of the project. At this scope the path must be absolute, because each project has a
+different working directory. Keep the file in a permanent directory. Do not move the file, because
+the configuration contains the path.
 
-```
-claude mcp add {{ serverData.id }} --scope user -- dotnet run <ABSOLUTE_PATH>/{{ serverData.name }} -v q
-```
+The page of each client gives the command:
 
-At this scope, the path must be absolute, because each project has a different working directory.
-Keep the file in a permanent directory. Do not move the file, because the configuration contains the
-path.
+- Claude Code: {{ site.url }}/install/claude-code.md
+- Codex: {{ site.url }}/install/codex.md
 
 ## Notes
 

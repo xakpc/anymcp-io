@@ -40,7 +40,10 @@ before(() => {
 });
 
 describe('the machine-readable endpoints exist', () => {
-  for (const name of ['llms.txt', 'install.md', 'servers.json', 'robots.txt', 'sitemap.xml', '_headers']) {
+  for (const name of [
+    'llms.txt', 'install.md', 'install/claude-code.md', 'install/codex.md',
+    'servers.json', 'robots.txt', 'sitemap.xml', '_headers'
+  ]) {
     test(name, () => {
       assert.ok(existsSync(site(name)), `_site/${name} was not written`);
     });
@@ -73,7 +76,7 @@ describe('the raw source endpoint is byte-identical to the catalog file', () => 
 });
 
 describe('no HTML entity reaches a text output', () => {
-  const files = ['llms.txt', 'install.md', 'servers.json']
+  const files = ['llms.txt', 'install.md', 'install/claude-code.md', 'install/codex.md', 'servers.json']
     .concat(servers.map(s => `servers/${s.id}/index.md`));
   for (const file of files) {
     test(file, () => {
@@ -132,34 +135,77 @@ describe('the manifest', () => {
 });
 
 describe('every install instruction keeps -v q', () => {
+  // A server page carries the values, and the client pages carry the file shapes. So the
+  // per-server assertions are about the argv and the two links; the JSON body and the
+  // --scope ordering moved to the Claude Code page, which is now the only place they exist.
   for (const server of servers) {
     test(`servers/${server.id}/index.md`, () => {
       const page = read('servers', server.id, 'index.md');
-      assert.ok(page.includes('"-v", "q"'), 'the JSON snippet lost -v q');
-      assert.ok(page.includes('-v q'), 'a command line lost -v q');
+      assert.ok(page.includes(`run ./.mcp-servers/${server.name} -v q`),
+        'the page does not give the runnable argv');
       assert.ok(page.includes(`${SITE_URL}/servers/${server.id}/${server.name}`),
         'the page does not give the absolute URL of the source file');
-      // A project install is the default. --scope user is the alternative, and it must come
-      // after, so an agent that follows the page in order does not change the machine.
-      assert.ok(page.includes('--scope project'), 'the page does not install into the project');
-      assert.ok(page.indexOf('--scope project') < page.indexOf('--scope user'),
-        'the page offers the machine-wide install before the project install');
       assert.ok(page.includes(`./.mcp-servers/${server.name}`),
         'the page does not use a path relative to the project');
+      // An agent that reads only this page must still reach a client page. Without both
+      // links it defaults to whichever client it knows, and writes the wrong file.
+      for (const client of ['claude-code', 'codex']) {
+        assert.ok(page.includes(`${SITE_URL}/install/${client}.md`),
+          `the page does not link to the ${client} setup page`);
+      }
     });
   }
 
-  test('install.md', () => {
-    assert.ok(read('install.md').includes('"-v", "q"'));
+  test('install.md sends the reader to both client pages', () => {
+    const page = read('install.md');
+    // install.md is client-neutral now, so it holds the build command and the rule, and no
+    // JSON body. The two array elements are asserted on the client pages instead.
+    assert.ok(page.includes('-v q'), 'install.md lost -v q');
+    assert.ok(page.includes('"-v"') && page.includes('"q"'),
+      'install.md does not say that -v and q are two elements');
+    for (const client of ['claude-code', 'codex']) {
+      assert.ok(page.includes(`${SITE_URL}/install/${client}.md`),
+        `install.md does not link to the ${client} setup page`);
+    }
+  });
+
+  test('install/claude-code.md', () => {
+    const page = read('install', 'claude-code.md');
+    assert.ok(page.includes('"mcpServers"'), 'the page lost the mcpServers key');
+    assert.ok(page.includes('"-v", "q"'), 'the JSON snippet lost -v q');
+    assert.ok(page.includes('-v q'), 'a command line lost -v q');
+    // A project install is the default. --scope user is the alternative, and it must come
+    // after, so an agent that follows the page in order does not change the machine.
+    assert.ok(page.includes('--scope project'), 'the page does not install into the project');
+    assert.ok(page.indexOf('--scope project') < page.indexOf('--scope user'),
+      'the page offers the machine-wide install before the project install');
+    assert.ok(page.includes('./.mcp-servers/'), 'the page does not use the project path');
+  });
+
+  test('install/codex.md', () => {
+    const page = read('install', 'codex.md');
+    assert.ok(page.includes('[mcp_servers.'), 'the page lost the mcp_servers table');
+    // Codex takes the argv as separate TOML array elements, exactly like the JSON form.
+    assert.ok(page.includes('"-v",'), 'the TOML snippet lost -v as its own element');
+    assert.ok(page.includes('"q",'), 'the TOML snippet lost q as its own element');
+    assert.ok(page.includes('startup_timeout_sec'), 'the page does not raise the start limit');
+    assert.ok(page.includes('./.mcp-servers/'), 'the page does not use the project path');
+    // The two traps that make Codex ignore a correct .codex/config.toml, with no error.
+    assert.ok(page.includes('trust_level'), 'the page does not name the project trust entry');
+    assert.ok(page.includes('\\\\?\\'), 'the page does not warn about the extended Windows path');
+    // env holds literal text, so env_vars is the only way a committed file names a secret.
+    assert.ok(page.includes('env_vars'), 'the page does not give the secret mechanism');
   });
 });
 
 describe('the HTML pages agree with the markdown pages', () => {
-  test('the setup guide installs into a project', () => {
+  test('the setup guide installs into a project, for both clients', () => {
     const guide = read('setup', 'index.html');
     assert.ok(guide.includes('./.mcp-servers/'), 'the setup guide does not use the project path');
     assert.ok(guide.includes('"-v", "q"'), 'the setup guide lost -v q');
-    assert.ok(guide.includes('mcpServers'), 'the setup guide does not lead with mcpServers');
+    assert.ok(guide.includes('mcpServers'), 'the setup guide does not show the Claude Code key');
+    assert.ok(guide.includes('mcp_servers'), 'the setup guide does not show the Codex key');
+    assert.ok(guide.includes('trust_level'), 'the setup guide does not name the Codex trust entry');
   });
 
   for (const server of servers) {
@@ -168,6 +214,11 @@ describe('the HTML pages agree with the markdown pages', () => {
       assert.ok(page.includes(`./.mcp-servers/${server.name}`),
         'the HTML page does not use the project path');
       assert.ok(page.includes('--scope project'), 'the HTML page does not name the project scope');
+      // A person on this page picks a client, so both shapes are here rather than linked.
+      assert.ok(page.includes(`[mcp_servers.${server.id}]`),
+        'the HTML page gives no Codex configuration');
+      assert.ok(page.includes('startup_timeout_sec'),
+        'the Codex snippet does not raise the start limit');
     });
   }
 
@@ -180,6 +231,12 @@ describe('the HTML pages agree with the markdown pages', () => {
         const expected = '"' + name + '": "' + '$' + '{' + name + '}"';
         assert.ok(page.includes(expected),
           server.id + ' does not expand ' + name + ' from the environment');
+        // Codex expands nothing, so the same guarantee needs env_vars: the name only,
+        // and the value comes from the environment of Codex itself.
+        assert.ok(page.includes('env_vars = ') && page.includes('"' + name + '"'),
+          server.id + ' does not name ' + name + ' through env_vars for Codex');
+        assert.equal(page.includes('env = {'), false,
+          server.id + ' puts a literal env table in a committed Codex config');
       }
     }
   });

@@ -8,6 +8,8 @@ permalink: "/llms.txt"
 > no container. The .NET 10 SDK is the only requirement.
 
 - Read {{ site.url }}/install.md one time. The steps are the same for each server.
+- The last step is different for each MCP client. Ask the user which client they use, then read
+  {{ site.url }}/install/claude-code.md or {{ site.url }}/install/codex.md.
 - Each server has a page for a machine. Get the `.md` page, and not the HTML page.
 - The full catalog as JSON: {{ site.url }}/servers.json
 
@@ -20,6 +22,8 @@ permalink: "/llms.txt"
 {% for server in serversArray %}
 - [{{ server.name | safe }}]({{ site.url }}/servers/{{ server.id }}/{{ server.name }}): the C# source of {{ server.id | safe }}. Save the file, then run it.
 {%- endfor %}
-- [Install guide]({{ site.url }}/install.md): the requirement, the shapes of the client configuration, and the failures to expect.
+- [Install guide]({{ site.url }}/install.md): the requirement, the shared steps, and the failures to expect.
+- [Claude Code setup]({{ site.url }}/install/claude-code.md): the `.mcp.json` shape, the approval prompt, and the removal command.
+- [Codex setup]({{ site.url }}/install/codex.md): the `.codex/config.toml` shape, the project trust entry, and the restart.
 - [Catalog for a person]({{ site.url }}/): the same catalog as a web site.
 - [Source repository]({{ site.github }}): the servers, the site, and the test harness.

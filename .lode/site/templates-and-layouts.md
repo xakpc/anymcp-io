@@ -16,9 +16,10 @@ flowchart TD
     E --> H["copy-text.njk"]
 ```
 
-Seven more templates make the machine-readable output. They use no layout, because their output is
-not HTML: `llms.njk`, `agent-install.njk`, `server-md.njk`, `server-raw.njk`, `servers-json.njk`,
-`robots.njk`, and `sitemap.njk`. See [agent endpoints](agent-endpoints.md).
+Nine more templates make the machine-readable output. They use no layout, because their output is
+not HTML: `llms.njk`, `agent-install.njk`, `install-claude-code.njk`, `install-codex.njk`,
+`server-md.njk`, `server-raw.njk`, `servers-json.njk`, `robots.njk`, and `sitemap.njk`. See
+[agent endpoints](agent-endpoints.md).
 
 ## base.njk
 
@@ -64,13 +65,16 @@ eleventyComputed:
 `link rel="alternate"` that points at the markdown copy of the page.
 
 The page shows the description, a status badge when the status is not `stable`, the tags, the tool
-list, the source code with copy, download, and agent-prompt buttons, a ready `.mcp.json` snippet, and
-a metadata sidebar. The `.mcp.json` snippet adds an `env` block when `serverData.envVars` is not
-empty.
+list, the source code with copy, download, and agent-prompt buttons, two ready configuration
+snippets, and a metadata sidebar.
 
-The snippet uses the `mcpServers` key, which Claude Code, Claude Desktop, Cursor, and Windsurf read.
-A note says that Visual Studio and VS Code use `servers`. The `args` array ends with `"-v"` and
-`"q"`, and each snippet on the site must keep them.
+The two snippets are the `.mcp.json` shape for Claude Code and the `.codex/config.toml` shape for
+Codex. A person chooses a client on the page, so both shapes are here, and the page needs no second
+fetch. The JSON snippet adds an `env` block when `serverData.envVars` is not empty, and the TOML
+snippet adds an `env_vars` list for the same servers. A note beside the JSON snippet says that Visual
+Studio and VS Code use `servers` in place of `mcpServers`. A note beside the TOML snippet gives the
+Codex trust entry and the Windows path trap. The argument list ends with `"-v"` and `"q"` in both
+snippets, and each snippet on the site must keep them. See [MCP clients](mcp-clients.md).
 
 Invariant: the page prints `serverData.displayCode`, and not `serverData.code`. The front matter must
 not appear on the page or in the clipboard. The raw endpoint `/servers/{id}/{id}.cs` is different: it
@@ -79,7 +83,8 @@ prints `serverData.code`, byte for byte, and `test/site.test.js` compares a hash
 ## setup.njk
 
 `setup.njk` is a static guide. It explains how to install .NET 10, how to save a server file,
-and how to configure the LLM client. It uses `copy-text.njk` for its command examples.
+and how to configure the LLM client. Like `servers.njk`, it gives both client shapes together. It
+uses `copy-text.njk` for its command examples, and each snippet has its own copy button.
 
 ## Shared components
 
@@ -88,4 +93,4 @@ and how to configure the LLM client. It uses `copy-text.njk` for its command exa
 - `copy-text.njk` - a `copyBlock(button)` helper for the setup page. It copies the code block that
   the button belongs to, so each snippet exists one time.
 
-Related: [Data pipeline](data-pipeline.md), [Styling](styling.md).
+Related: [Data pipeline](data-pipeline.md), [Styling](styling.md), [MCP clients](mcp-clients.md).

@@ -3,8 +3,8 @@
 The site is an Eleventy (11ty) static site. Input is `src/`. Output is `_site/`. The build reads the
 `.cs` files in `mcp/`, and makes two sets of output. People read the HTML pages: the home page, one
 detail page for each server, and a setup guide. Coding agents read the text files: `/llms.txt`,
-`/install.md`, `/servers.json`, and one `.md` page and one `.cs` file for each server. See
-[agent endpoints](agent-endpoints.md).
+`/install.md`, one page for each MCP client under `/install/`, `/servers.json`, and one `.md` page
+and one `.cs` file for each server. See [agent endpoints](agent-endpoints.md).
 
 ```mermaid
 flowchart LR
@@ -21,6 +21,7 @@ flowchart LR
     J["setup.njk"] --> I
     E --> K["server-md.njk, server-raw.njk,<br/>servers-json.njk, llms.njk"]
     K --> I
+    L["agent-install.njk,<br/>install-claude-code.njk,<br/>install-codex.njk"] --> I
 ```
 
 Topics in this domain:
@@ -29,6 +30,7 @@ Topics in this domain:
 - [Styling](styling.md) - Tailwind theme, fonts, and code colors.
 - [Client-side behavior](client-side-behavior.md) - search, copy, download, and toast.
 - [Agent endpoints](agent-endpoints.md) - the machine-readable copy of the catalog.
+- [MCP clients](mcp-clients.md) - Claude Code and Codex, and the differences between them.
 - [Build and deploy](build-and-deploy.md) - commands, configuration, and hosting.
 
 Related: [Catalog domain](../catalog/summary.md), [Practices](../practices.md).
