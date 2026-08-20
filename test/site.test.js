@@ -242,6 +242,39 @@ describe('the HTML pages agree with the markdown pages', () => {
   });
 });
 
+describe('the Copy Agent Prompt button', () => {
+  // The prompt is the main action of a card and of a detail page, so two templates write
+  // it. Both take the text from the agentPrompt filter in .eleventy.js, and this group
+  // fails if one of them stops doing that.
+  const home = read('index.html');
+
+  for (const server of servers) {
+    test(server.id, () => {
+      const expected = `Read ${SITE_URL}/servers/${server.id}/index.md and install the ` +
+        `${server.id} MCP server into this project.`;
+
+      const detail = read('servers', server.id, 'index.html');
+      assert.ok(detail.includes(`data-prompt="${expected}"`),
+        'the detail page carries a different prompt');
+      assert.ok(home.includes(`data-prompt="${expected}"`),
+        'the catalog card carries a different prompt');
+
+      // The prompt is a pointer, and one sentence. Every rule for the agent is on the .md
+      // page, so an instruction that appears here belongs there instead. A second sentence
+      // needs a period and a space; the periods inside index.md and the host name do not.
+      assert.equal(expected.includes('. '), false, 'the prompt holds more than one sentence');
+      assert.ok(expected.endsWith('.'), 'the prompt does not end a sentence');
+    });
+  }
+
+  test('the home page copies no code', () => {
+    // A card gives the prompt and a link. The source belongs to the detail page, which
+    // shows the block that the copy buttons read.
+    assert.equal(home.includes('onclick="copyServerCode'), false,
+      'a catalog card still copies the source code');
+  });
+});
+
 describe('the Cloudflare header rules are published', () => {
   test('_headers sets a text content type for .cs and .md', () => {
     const headers = read('_headers');
@@ -280,6 +313,19 @@ describe('the code block that the copy buttons read', () => {
 
       assert.equal(decode(page.slice(start, end)), server.displayCode,
         'the block and displayCode differ. A "| safe" on the code block does this.');
+
+      // The block is clipped to 20 lines, so the page gives a button for the rest. The
+      // label holds the total, and a lineCount filter that counts something else shows
+      // here and nowhere else.
+      const lines = server.displayCode.split('\n').length;
+      if (lines > 28) {
+        assert.ok(page.includes('id="server-code-toggle"'),
+          'the long code block has no button to open it');
+        assert.ok(page.includes(`Show all ${lines} lines`),
+          `the button does not say "Show all ${lines} lines"`);
+        assert.ok(page.includes('id="server-code-fade"'),
+          'the clipped block has no fade at its foot');
+      }
     });
   }
 });

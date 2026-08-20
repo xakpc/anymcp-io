@@ -24,7 +24,7 @@ $env:DEBUG = "Eleventy*"; npx eleventy
 ```javascript
 export default function(eleventyConfig) {
   eleventyConfig.addPassthroughCopy("src/_headers");
-  // filters: date, localeString, wireName, serversManifest
+  // filters: date, localeString, wireName, lineCount, agentPrompt, serversManifest
   return {
     templateFormats: ["md", "njk", "html", "liquid"],
     dir: { input: "src", includes: "_includes", data: "_data", output: "_site" },
@@ -41,10 +41,17 @@ Filters:
 - `wireName(name)` - returns the snake case form of a C# method name, which is the name that a
   `tools/list` response holds. The module level `toWireName()` holds the rule, and `serversManifest`
   calls that same function, so the manifest and the pages can never disagree.
+- `lineCount(text)` - returns the number of lines of a string. A server page shows the first 20
+  lines of the code, and the label of the button that opens the rest needs the total. See
+  [client-side behavior](client-side-behavior.md).
+- `agentPrompt(id, siteUrl)` - returns the one line that the **Copy Prompt** button puts on the
+  clipboard. A card and a detail page both write that button, so the text lives here and the two
+  cannot drift. See [client-side behavior](client-side-behavior.md).
 - `serversManifest(serversArray, siteUrl)` - returns the full JSON body of `/servers.json`. It drops
   `code` and `displayCode`, makes each URL absolute, and adds a `run` block with the correct argv.
 
-Both name filters serve the machine-readable endpoints. See [agent endpoints](agent-endpoints.md).
+`wireName` and `serversManifest` serve the machine-readable endpoints. See
+[agent endpoints](agent-endpoints.md).
 
 The site has no `src/assets/` directory, and no passthrough rule for one. Add both together when a
 static file arrives. A rule for a path that does not exist copies nothing and raises no error, so

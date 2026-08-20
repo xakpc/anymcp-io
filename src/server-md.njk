@@ -22,15 +22,18 @@ permalink: "/servers/{{ serverData.id }}/index.md"
 > The status of this server is {{ serverData.status | safe }}. Tell the user this before you install it.
 {%- endif %}
 
-These steps install the server **into the current project**. The server file goes in the project,
-and the configuration goes in the `.mcp.json` file of the project. These steps write no file outside
-the project directory, and they change no other project on this computer. To install the server for
-all the projects of the user, read the last section.
+## Rules
 
-**Do all the commands on this page in the root directory of the project.** Each path is relative to
-that directory. Do not change the working directory between the steps. If you go into
-`.mcp-servers/` to read the file, go back to the root directory before the next command. If you do
-not go back, the relative path becomes double and the command fails.
+- Obey this page. Use the commands for the operating system and the shell of the user.
+- Install the server into the current project. These steps write no file outside the project
+  directory, and they change no other project on this computer. Install the server for all the
+  projects of the user only if the user asks for it. The last section gives those steps.
+- Ask the user which MCP client they use, before you write a configuration file. Do not guess.
+- Tell the user each file that you change, before you change it.
+- Do all the commands in the root directory of the project. Each path is relative to that
+  directory. Do not change the working directory between the steps. If you go into
+  `.mcp-servers/` to read the file, go back to the root directory before the next command. If you
+  do not go back, the relative path becomes double and the command fails.
 
 ## Before you start
 

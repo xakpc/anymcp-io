@@ -166,4 +166,22 @@ window.copyPrompt = function(buttonElement) {
     console.error('Failed to copy: ', err);
   });
 };
+
+// Opens and closes the code block on a server page. The block is clipped with a
+// max-height, and never with display:none, so the whole file stays in the DOM: the copy
+// and download paths read #server-code.textContent in both states.
+window.toggleServerCode = function(button) {
+  const wrap = document.getElementById('server-code-wrap');
+  if (!wrap || !button) return;
+
+  const open = wrap.dataset.open !== 'true';
+  wrap.dataset.open = String(open);
+  wrap.style.maxHeight = open ? 'none' : button.dataset.collapsed;
+  wrap.style.overflow = open ? 'visible' : 'hidden';
+
+  const fade = document.getElementById('server-code-fade');
+  if (fade) fade.hidden = open;
+
+  button.textContent = open ? 'Show less' : 'Show all ' + button.dataset.lines + ' lines';
+};
 </script>

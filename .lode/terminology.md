@@ -41,8 +41,9 @@
   `/servers/{id}/{id}.cs`. See [agent endpoints](site/agent-endpoints.md).
 - Raw source URL - `/servers/{id}/{id}.cs`. It holds the catalog file, byte for byte, so an agent
   downloads it and does not read the HTML page.
-- Agent prompt - The one line that the **Copy Agent Prompt** button puts on the clipboard. It names
-  the `.md` page of a server, and a coding agent reads that page and installs the server.
+- Agent prompt - The one line that the **Copy Prompt** button puts on the clipboard. It names the
+  `.md` page of a server, and a coding agent reads that page and installs the server. It is the
+  main action of a catalog card and of a server page. The `agentPrompt` filter holds the text.
 - Project install - The default. The server file goes in `.mcp-servers/` in the project of the user,
   and the entry goes in the configuration file of the client in that same project. The path is
   relative, and both files go into version control.

@@ -46,6 +46,10 @@ data attribute:
 <div ... data-server="{{ server.name }} {{ server.description }} {{ server.tags | join(' ') }}">
 ```
 
+A card gives two buttons: **View**, which opens the detail page, and **Copy Prompt**, which is the
+primary one. A card copies no source code. The code belongs to the detail page, which shows the
+block that the copy buttons read. See [client-side behavior](client-side-behavior.md).
+
 ## servers.njk
 
 `servers.njk` makes one page for each server through 11ty pagination:

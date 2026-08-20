@@ -59,8 +59,16 @@ The cost is one more fetch for an installing agent. The gain is that a change to
 one file. See [MCP clients](mcp-clients.md).
 
 **An agent asks which client the user has.** Two clients read two different files, and the wrong file
-gives a client with no server and no error message. `/install.md`, `/servers/{id}/index.md`, and the
-agent prompt all say to ask before they write a file.
+gives a client with no server and no error message. `/install.md` and `/servers/{id}/index.md` both
+say to ask before they write a file.
+
+**Each rule for an agent is on the page, and not in the prompt.** The **Copy Agent Prompt** button
+gives one sentence: the task, and the URL of `/servers/{id}/index.md`. That page opens with a
+`## Rules` list, which holds every rule that the prompt once carried — obey the page, use the shell
+of the user, install into the current project, ask which client the user has, name each file before
+you change it, and stay in the root directory. The agent reads the page before it writes a file, so
+the same rule in two places is only a rule to change two times. See
+[client-side behavior](client-side-behavior.md).
 
 **A committed configuration holds no secret, in both formats.** Claude Code replaces `${KEY}` from
 the environment. Codex replaces nothing: its `env` table holds literal text, so a Codex file uses
@@ -72,7 +80,8 @@ both forms on the HTML page of each server that has an `envVars` list, and it fa
 escaped `<` makes a `.cs` file that does not compile, and an escaped `"` makes JSON that does not
 parse. The rule to review is simple: a non-HTML template holds no bare `{{ }}`.
 
-The one place that must **not** have `| safe` is the `data-prompt` attribute in `servers.njk`. That
+The one place that must **not** have `| safe` is the `data-prompt` attribute, in `servers.njk` and
+in `index.njk`. That
 value goes into HTML, the escape is correct there, and `dataset` decodes it again.
 
 **The raw endpoint uses `code`, and not `displayCode`.** `/servers/{id}/{id}.cs` is the catalog file,
@@ -138,7 +147,8 @@ Two more rules keep an agent from making a wrong command:
 
 ## The two filters
 
-`.eleventy.js` holds `wireName` and `serversManifest`. `serversManifest` builds the whole
+`.eleventy.js` holds two filters for these endpoints, `wireName` and `serversManifest`.
+`serversManifest` builds the whole
 `/servers.json` body in JavaScript, and the template prints the string. JSON that a template writes by
 hand breaks on the first description that holds a quote. This follows `displayCodeMap`, which works
 the same way.
@@ -184,7 +194,8 @@ Three paths lead an agent to these files:
 - `/llms.txt`, which is the entry point that the llmstxt.org convention defines.
 - A `link rel="alternate"` in `base.njk` on every page. `servers.njk` sets `agentMarkdown` in its
   `eleventyComputed` block, and `base.njk` writes the link when the value exists.
-- The **Copy Agent Prompt** button on each server page. See
+- The **Copy Prompt** button on each catalog card, and **Copy Agent Prompt** on each server page.
+  It is the primary button in both places. See
   [client-side behavior](client-side-behavior.md).
 
 ## Content types

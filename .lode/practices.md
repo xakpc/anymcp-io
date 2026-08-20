@@ -98,8 +98,9 @@ behavior when you change the parser. See [data pipeline](site/data-pipeline.md).
 
 The machine-readable outputs are procedures that a coding agent obeys without a person. Write them in
 ASD-STE100 Simplified Technical English. This applies to `src/llms.njk`, `src/agent-install.njk`,
-`src/install-claude-code.njk`, `src/install-codex.njk`, `src/server-md.njk`, the `runtime` strings in
-the `serversManifest` filter in `.eleventy.js`, and the `data-prompt` text in `src/servers.njk`.
+`src/install-claude-code.njk`, `src/install-codex.njk`, `src/server-md.njk`, and two filters in
+`.eleventy.js`: the `runtime` strings that `serversManifest` builds, and `agentPrompt`, which holds
+the text of the **Copy Prompt** button that `src/index.njk` and `src/servers.njk` both write.
 
 The rules that change the text most:
 

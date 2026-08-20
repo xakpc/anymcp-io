@@ -34,6 +34,19 @@ export default function(eleventyConfig) {
 
   eleventyConfig.addFilter("wireName", toWireName);
 
+  // The number of lines of a code block. A server page shows the first 20 lines and gives
+  // a button for the rest, and the label of that button needs the total.
+  eleventyConfig.addFilter("lineCount", (text) => String(text || "").split("\n").length);
+
+  // The one line that the Copy Agent Prompt button puts on the clipboard. A catalog card
+  // and a detail page both write it, so the text lives here and not in a template, and the
+  // two can never drift. The line is a pointer and not a procedure: /servers/{id}/index.md
+  // opens with the rules that an agent obeys.
+  eleventyConfig.addFilter("agentPrompt", function(id, siteUrl) {
+    const base = String(siteUrl || "").replace(/[/]+$/, "");
+    return `Read ${base}/servers/${id}/index.md and install the ${id} MCP server into this project.`;
+  });
+
   // The catalog manifest for machine consumers, at /servers.json. It drops `code` and
   // `displayCode`, which are larger than all other fields together, and it makes every
   // URL absolute, because an agent reads this file with no base URL.
