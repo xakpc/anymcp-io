@@ -1,0 +1,188 @@
+---
+pagination:
+  data: serversArray
+  size: 1
+  alias: serverData
+permalink: "/servers/{{ serverData.id }}/index.md"
+---
+# {{ serverData.id | safe }}
+
+> {{ serverData.longDescription | safe }}
+
+- File: `{{ serverData.name | safe }}`
+- Status: {{ serverData.status | safe }} — Version: {{ serverData.version | safe }} — License: {{ serverData.license | safe }} — Author: {{ serverData.author | safe }}
+- Tags: {{ serverData.tags | join(", ") | safe }}
+- Source, ready to download: {{ site.url }}/servers/{{ serverData.id }}/{{ serverData.name }}
+- Human page: {{ site.url }}/servers/{{ serverData.id }}/
+- Shared install guide: {{ site.url }}/install.md
+{% if "windows" in serverData.tags %}
+> This server runs on Windows only. Stop here on macOS or Linux, and tell the user why.
+{%- endif %}
+{%- if serverData.status != "stable" %}
+> This server is {{ serverData.status | safe }}. Say so before you install it.
+{%- endif %}
+
+These steps install the server **in the current project**. The file goes in the project, and the
+configuration goes in the `.mcp.json` of the project. Nothing is written outside the project
+directory, and nothing changes for other projects on this machine. To install the server for every
+project instead, read the last section.
+
+## Prerequisite
+
+```
+dotnet --version
+```
+
+The output must start with `10.`. `dotnet run <file>.cs` with `#:package` directives is a
+.NET 10 SDK feature, and every earlier SDK fails. If the version is lower, read
+{{ site.url }}/install.md before you continue.
+
+## 1. Put the file in the project
+
+From the root directory of the project:
+
+bash or zsh:
+
+```
+mkdir -p .mcp-servers
+curl -fsSL -o .mcp-servers/{{ serverData.name }} "{{ site.url }}/servers/{{ serverData.id }}/{{ serverData.name }}"
+```
+
+PowerShell:
+
+```
+New-Item -ItemType Directory -Force .mcp-servers | Out-Null
+Invoke-WebRequest -Uri "{{ site.url }}/servers/{{ serverData.id }}/{{ serverData.name }}" -OutFile ".mcp-servers/{{ serverData.name }}"
+```
+
+The file starts with a `// ---` metadata comment block. It is valid C#, and `dotnet run`
+ignores it.
+
+## 2. Build one time
+
+```
+dotnet build .mcp-servers/{{ serverData.name }} -v q
+```
+
+The first build restores the packages and compiles, which takes from 30 seconds to two
+minutes on a cold cache. An MCP client gives a server about 30 seconds to start, so a
+server that was never built reports a failure that is only a timeout.
+
+This command adds no `bin` directory and no `obj` directory to the project. A file-based app keeps
+its build output in a cache of the user, under `%TEMP%/dotnet/runfile/` on Windows and
+`$TMPDIR/dotnet/runfile/` elsewhere. The project directory holds one `.cs` file and nothing else, so
+`.gitignore` needs no new line.
+{% if serverData.envVars.length %}
+## 3. Environment variables
+
+This server reads these variables:
+{% for envVar in serverData.envVars %}
+- `{{ envVar | safe }}`
+{%- endfor %}
+
+Ask the user for each value. Do not invent one, and do not write one into `.mcp.json`, because that
+file belongs to the project and goes into version control. Put the name of the variable in the file,
+and keep the value in the environment.
+
+The server starts and lists its tools with no value set. A key is needed only when the model
+calls a tool, so a failure at startup is never a missing key.
+{%- endif %}
+
+## {% if serverData.envVars.length %}4{% else %}3{% endif %}. Register the server in this project
+
+Claude Code:
+
+```
+claude mcp add {{ serverData.id }} --scope project{% if serverData.envVars.length %}{% for envVar in serverData.envVars %} --env {{ envVar | safe }}={{ "${" }}{{ envVar | safe }}{{ "}" }}{% endfor %}{% endif %} -- dotnet run ./.mcp-servers/{{ serverData.name }} -v q
+```
+
+`--scope project` writes `.mcp.json` in the root directory of the project. Commit that file, and
+every person who clones the project gets the server. The `--` separator is required, because the
+command that follows holds the `-v q` option.
+
+A client that reads a JSON configuration file. Claude Code, Claude Desktop, Cursor, and
+Windsurf use `mcpServers`. Put this in `.mcp.json` in the root directory of the project:
+
+```json
+{
+  "mcpServers": {
+    "{{ serverData.id }}": {
+      "type": "stdio",
+      "command": "dotnet",
+      "args": ["run", "./.mcp-servers/{{ serverData.name }}", "-v", "q"]{% if serverData.envVars.length %},
+      "env": {
+{%- for envVar in serverData.envVars %}
+        "{{ envVar | safe }}": "{{ "${" }}{{ envVar | safe }}{{ "}" }}"{% if not loop.last %},{% endif %}
+{%- endfor %}
+      }{% endif %}
+    }
+  }
+}
+```
+
+Visual Studio and VS Code use `servers` in place of `mcpServers`. The object inside is the
+same.
+
+The path is relative to the project, so it stays correct for every person who clones the project, on
+every operating system. It resolves against the working directory of the client, which is the project
+directory. A client that starts a server somewhere else needs an absolute path instead.
+{%- if serverData.envVars.length %}
+
+Claude Code expands `${...}` from the environment when it reads `.mcp.json`, so the file holds the
+name of the variable and no secret. A client that does not expand a variable needs the literal value,
+and that configuration must then stay out of version control.
+{%- endif %}
+
+## {% if serverData.envVars.length %}5{% else %}4{% endif %}. Verify
+
+Restart the client in the project directory, then:
+
+```
+claude mcp list
+claude mcp get {{ serverData.id }}
+```
+
+`{{ serverData.id }}` must show as connected, with {{ serverData.tools.length }} tool(s). Then
+ask the model to call `{{ serverData.tools[0].name | wireName | safe }}`, and confirm that a
+result comes back.
+
+Claude Code asks a person to approve a project server the first time it reads `.mcp.json`. Approve
+the prompt, or run `/mcp` to approve it later.
+
+## Tools
+
+The wire name is what a `tools/list` response holds. The C# name is what the catalog page
+shows.
+{% for tool in serverData.tools %}
+- `{{ tool.name | wireName | safe }}` (C# `{{ tool.name | safe }}`) — {{ tool.description | safe }}
+{%- endfor %}
+
+## Remove
+
+```
+claude mcp remove {{ serverData.id }} --scope project
+```
+
+Then delete `.mcp-servers/{{ serverData.name }}`.
+
+## Install for every project instead
+
+Do this only when the user asks for it. It changes the configuration of the user, and not the
+project.
+
+```
+claude mcp add {{ serverData.id }} --scope user -- dotnet run <ABSOLUTE_PATH>/{{ serverData.name }} -v q
+```
+
+At this scope the path must be absolute, because the working directory is different in each project.
+Keep the file in a directory that stays, and do not move it: the configuration holds the path.
+
+## Notes
+
+- Keep `-v q`. Standard output carries the JSON-RPC stream, and without `-v q` the build
+  output can reach it and break the protocol. It is two elements, `"-v"` and `"q"`, and not
+  one element `"-v q"`.
+{%- if serverData.id == "image-utility" %}
+- This server keeps every file path inside its working directory, and refuses a path outside
+  it. With a project install, that directory is the project.
+{%- endif %}

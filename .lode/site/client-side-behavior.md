@@ -43,7 +43,8 @@ The same file gives three global functions:
 |---|---|---|
 | `copyServerCode(id, button)` | card buttons, and the small button on the code block | copies the code, and turns the button green for 2 seconds |
 | `copyServerCodeLarge(id, button)` | the main button on a detail page | copies the code, and replaces the button classes for 2 seconds |
-| `downloadServerFile(filename)` | the download button on a detail page | makes a Blob, and starts a browser download |
+| `downloadServerFile(id, filename)` | the download button on a detail page | makes a Blob, and starts a browser download |
+| `copyPrompt(button)` | the agent-prompt button on a detail page | copies the text in `data-prompt` |
 
 Each function reads `window.serverCode`, and stops when the id gives no code:
 
@@ -56,11 +57,29 @@ navigator.clipboard.writeText(code);
 A shared helper `restoreButton(button, content, className)` puts the button back to its first look
 after 2 seconds. It also clears the inline styles that `copyServerCode()` sets.
 
-`downloadServerFile()` finds the server with `filename.replace('.cs', '')`. This works only when the
-`name` field equals the server id plus `.cs`. See [backlog](../plans/backlog.md).
+`downloadServerFile()` takes the server id, so it does not depend on the value of the `name` field.
+The same file is also at `/servers/{id}/{id}.cs`. See [agent endpoints](agent-endpoints.md).
+
+## The agent prompt
+
+The **Copy Agent Prompt** button gives a person one line to paste into a coding agent. The line names
+the `.md` page of the server, and the agent reads it and installs the server.
+
+The text is in a `data-prompt` attribute, and not in the `onclick` attribute:
+
+```html
+<button onclick="copyPrompt(this)" data-prompt="Install the xquik MCP server ...">
+```
+
+`copyPrompt()` reads `button.dataset.prompt`. Invariant: the template writes `data-prompt` with no
+`| safe` filter. Nunjucks escapes the value, so a quote in the text cannot break the markup, and
+`dataset` gives the original text back.
 
 ## Small helpers
 
-`copy-text.njk` gives `copyText(text)`. The setup page uses it for command examples.
+`copy-text.njk` gives `copyBlock(button)`. The setup page uses it for its command examples. The
+function finds the `pre code` element in the container of the button, and copies its `textContent`.
+The snippet therefore exists one time, in the block that the reader sees. An earlier version took the
+text as an argument, which put a second, escaped copy of each snippet in the `onclick` attribute.
 
 Related: [Templates and layouts](templates-and-layouts.md), [Data pipeline](data-pipeline.md).

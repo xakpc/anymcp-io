@@ -85,14 +85,27 @@ public static class MyTools
     "my-server": {
       "type": "stdio",
       "command": "dotnet",
-      "args": ["run", ".\mcp\my-server.cs", "-v q"]
+      "args": ["run", ".\\mcp\\my-server.cs", "-v", "q"]
     }
   }
 }
 ```
 
 The `-v q` argument makes `dotnet run` quiet. Without it, the build output can reach stdout and disturb
-the client. `.mcp.json` is not in git, and it does not list every server. Add your entry by hand.
+the client. It is two array elements, `"-v"` and `"q"`, and not one element `"-v q"`. In JSON each
+backslash of a Windows path is doubled.
+
+`.mcp.json` is not in git, and it does not list every server. Add your entry by hand.
+
+The site publishes the same instructions for a user, at `/install.md` and `/servers/{id}/index.md`.
+Keep the two the same. Those pages install a server **into a project**: the file goes in
+`.mcp-servers/` in the project of the user, and `args` holds the relative path
+`./.mcp-servers/{id}.cs`. This repository is such a project, so its own `.mcp.json` has the same
+shape. See [agent endpoints](../site/agent-endpoints.md).
+
+`dotnet build` and `dotnet run` add no `bin` or `obj` directory next to a `.cs` file. A file-based
+app is not a project, so the SDK keeps the output in a cache of the user, under
+`%TEMP%/dotnet/runfile/`. This is why `.gitignore` needs no entry for build output.
 
 ## Package versions in the catalog now
 

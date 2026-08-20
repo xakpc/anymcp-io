@@ -11,7 +11,8 @@ on:
       - 'mcp/**'
       - 'test/**'
       - 'scripts/**'
-      - 'src/_data/**'
+      - 'src/**'
+      - '.eleventy.js'
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/mcp-tests.yml'
@@ -21,7 +22,8 @@ on:
       - 'mcp/**'
       - 'test/**'
       - 'scripts/**'
-      - 'src/_data/**'
+      - 'src/**'
+      - '.eleventy.js'
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/mcp-tests.yml'
@@ -54,6 +56,8 @@ jobs:
       # Always the whole catalog. The id and package version tests are relational,
       # so a subset cannot show a conflict.
       - run: npm run test:lint
+      # No .NET needed, and about a second, so it rides along with lint.
+      - run: npm run test:site
 
   prepare:
     name: choose the servers to run

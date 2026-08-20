@@ -8,7 +8,8 @@ truth about it. `scripts/run-tests.js` is the only entry point. GitHub Actions r
 ```mermaid
 flowchart TD
     A["scripts/run-tests.js"] --> B["lint<br/>node only, seconds"]
-    B --> C["build<br/>dotnet build, one process for each server"]
+    B --> S["site<br/>node only, one Eleventy build"]
+    S --> C["build<br/>dotnet build, one process for each server"]
     C --> D["protocol<br/>dotnet run, a live stdio session"]
     B -. "reads" .-> P["src/_data/servers.js<br/>the parser that the site uses"]
     D -. "compares against" .-> P
@@ -17,16 +18,34 @@ flowchart TD
 | Layer | File | Needs .NET | Answers |
 |---|---|---|---|
 | lint | `test/lint.test.js` | no | Is the metadata correct, and does the file follow the rules? |
+| site | `test/site.test.js` | no | Does the site publish correct instructions for an agent? |
 | build | `test/build.test.js` | yes | Does the file compile, with no warning? |
 | protocol | `test/protocol.test.js` | yes | Does the server speak MCP, and does the page agree with it? |
 
-The layers run in this order. Lint is first because it costs about one second and needs no toolchain.
+The layers run in this order. Lint and site are first because they cost about one second each and
+need no toolchain.
+
+## What the site layer checks
+
+It builds the site one time, and then reads `_site/`:
+
+- Each endpoint exists, and each server has an HTML page, a `.md` page, and a `.cs` file.
+- `/servers/{id}/{id}.cs` and `mcp/{id}.cs` give the same SHA-256 hash. This one check finds a
+  missing `| safe` filter, a whitespace-control mistake, and a change to `displayCode`.
+- No HTML entity is in `/llms.txt`, `/install.md`, `/servers.json`, or any `.md` page. Nunjucks
+  escapes by default, and an escaped quote makes JSON that does not parse.
+- `/servers.json` parses, covers the whole catalog, holds absolute URLs only, gives each server an
+  argv that ends with `"-v"` and `"q"`, and names each tool in snake case.
+- Each `.md` page holds `-v q` and the absolute URL of its source file.
+
+See [agent endpoints](../site/agent-endpoints.md).
 
 ## Commands
 
 ```bash
 npm test                                    # all layers, whole catalog
 npm run test:lint                           # one layer
+npm run test:site                           # the machine-readable output
 npm run test:protocol -- --server xquik     # one server
 npm run test:list                           # the server ids, as JSON
 node scripts/run-tests.js --jobs 4          # more parallel dotnet work

@@ -50,9 +50,9 @@ showNavigation: false
       </h2>
       <p class="text-muted-foreground mb-4">What you need before getting started</p>
       <ul class="space-y-2 text-slate-700">
-        <li>• .NET 10 installed</li>
-        <li>• An LLM client that supports MCP (Visual Studio, Claude Desktop, etc.)</li>
-        <li>• A single .cs file from the catalog</li>
+        <li>• The .NET 10 SDK. Check with <code class="bg-muted px-1 py-0.5 rounded text-xs">dotnet --version</code>; the output must start with <code class="bg-muted px-1 py-0.5 rounded text-xs">10.</code>. Running a <code class="bg-muted px-1 py-0.5 rounded text-xs">.cs</code> file directly is a .NET 10 feature, so earlier SDKs fail.</li>
+        <li>• An LLM client that supports MCP (Claude Code, Claude Desktop, Cursor, Visual Studio, VS Code)</li>
+        <li>• A single .cs file from the catalog, saved in your project</li>
       </ul>
     </div>
 
@@ -65,31 +65,23 @@ showNavigation: false
         </svg>
         Basic Configuration
       </h2>
-      <p class="text-muted-foreground mb-4">Create .mcp.json in your project root</p>
+      <p class="text-muted-foreground mb-4">Put the server file in <code class="bg-muted px-1 py-0.5 rounded text-xs">.mcp-servers/</code> in your project, then create <code class="bg-muted px-1 py-0.5 rounded text-xs">.mcp.json</code> in the project root. Commit both, and everyone who clones the project gets the server. The path is relative, so it works on every operating system.</p>
       <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
         <p class="text-sm text-blue-800">
-          <strong>Note:</strong> This example is for Visual Studio and similar clients. For Claude Code, use <code class="bg-blue-100 px-1 py-0.5 rounded text-xs">mcpServers</code> instead of <code class="bg-blue-100 px-1 py-0.5 rounded text-xs">servers</code>.
+          <strong>Note:</strong> This example is for Claude Code, Claude Desktop, Cursor, and Windsurf. Visual Studio and VS Code use <code class="bg-blue-100 px-1 py-0.5 rounded text-xs">servers</code> instead of <code class="bg-blue-100 px-1 py-0.5 rounded text-xs">mcpServers</code>.
         </p>
       </div>
       <div class="relative">
         <pre class="language-json"><code class="language-json">{
-  "servers": {
+  "mcpServers": {
     "MyUtilityServer": {
       "type": "stdio",
       "command": "dotnet",
-      "args": ["run", "C:\\\\path\\\\to\\\\your\\\\mcp-server.cs"]
+      "args": ["run", "./.mcp-servers/mcp-server.cs", "-v", "q"]
     }
   }
 }</code></pre>
-        <button onclick="copyText(`{
-  \"servers\": {
-    \"MyUtilityServer\": {
-      \"type\": \"stdio\",
-      \"command\": \"dotnet\",
-      \"args\": [\"run\", \"C:\\\\\\\\path\\\\\\\\to\\\\\\\\your\\\\\\\\mcp-server.cs\"]
-    }
-  }
-}`)" class="absolute top-2 right-2 inline-flex items-center px-3 py-1.5 text-xs font-medium bg-slate-700 text-slate-100 rounded hover:bg-slate-600 transition-colors">
+        <button onclick="copyBlock(this)" class="absolute top-2 right-2 inline-flex items-center px-3 py-1.5 text-xs font-medium bg-slate-700 text-slate-100 rounded hover:bg-slate-600 transition-colors">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
           </svg>
@@ -103,7 +95,7 @@ showNavigation: false
       <p class="text-muted-foreground mb-4">Pass tokens and authentication keys securely</p>
       <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
         <p class="text-sm text-blue-800">
-          <strong>Note:</strong> These examples are for Visual Studio and similar clients. For Claude Code, use <code class="bg-blue-100 px-1 py-0.5 rounded text-xs">mcpServers</code> instead of <code class="bg-blue-100 px-1 py-0.5 rounded text-xs">servers</code>.
+          <strong>Note:</strong> The <code class="bg-blue-100 px-1 py-0.5 rounded text-xs">inputs</code> block below belongs to Visual Studio and VS Code, which also use <code class="bg-blue-100 px-1 py-0.5 rounded text-xs">servers</code>. Claude Code, Claude Desktop, Cursor, and Windsurf use <code class="bg-blue-100 px-1 py-0.5 rounded text-xs">mcpServers</code>, and expand <code class="bg-blue-100 px-1 py-0.5 rounded text-xs">${MY_KEY}</code> from the environment instead.
         </p>
       </div>
       <div class="space-y-6">
@@ -123,33 +115,14 @@ showNavigation: false
     "DotnetMcpFile": {
       "type": "stdio",
       "command": "dotnet",
-      "args": ["run", "C:\\\\path\\\\to\\\\your\\\\mcp-server.cs"],
+      "args": ["run", "./.mcp-servers/mcp-server.cs", "-v", "q"],
       "env": {
         "USER_EMAIL": "${input:user_email}"
       }
     }
   }
 }</code></pre>
-            <button onclick="copyText(`{
-  \"inputs\": [
-    {
-      \"id\": \"user_email\",
-      \"description\": \"Your email\",
-      \"type\": \"promptString\",
-      \"password\": true
-    }
-  ],
-  \"servers\": {
-    \"DotnetMcpFile\": {
-      \"type\": \"stdio\",
-      \"command\": \"dotnet\",
-      \"args\": [\"run\", \"C:\\\\\\\\path\\\\\\\\to\\\\\\\\your\\\\\\\\mcp-server.cs\"],
-      \"env\": {
-        \"USER_EMAIL\": \"\${input:user_email}\"
-      }
-    }
-  }
-}`)" class="absolute top-2 right-2 inline-flex items-center px-3 py-1.5 text-xs font-medium bg-slate-700 text-slate-100 rounded hover:bg-slate-600 transition-colors">
+            <button onclick="copyBlock(this)" class="absolute top-2 right-2 inline-flex items-center px-3 py-1.5 text-xs font-medium bg-slate-700 text-slate-100 rounded hover:bg-slate-600 transition-colors">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
               </svg>
@@ -179,25 +152,7 @@ public static class EnvironmentExamples
         return $"{variableName} = {value}";
     }
 }</code></pre>
-            <button onclick="copyText(`[McpServerToolType]
-public static class EnvironmentExamples
-{
-    [McpServerTool, Description(\"Gets environment variable value\")]
-    public static string GetEnvironmentVariable(string variableName, string? defaultValue = null)
-    {
-        var value = Environment.GetEnvironmentVariable(variableName);
-        
-        if (string.IsNullOrEmpty(value))
-        {
-            if (defaultValue != null)
-                return $\"Environment variable '{variableName}' not found, using default: {defaultValue}\";
-            else
-                return $\"Environment variable '{variableName}' not found\";
-        }
-        
-        return $\"{variableName} = {value}\";
-    }
-}`)" class="absolute top-2 right-2 inline-flex items-center px-3 py-1.5 text-xs font-medium bg-slate-700 text-slate-100 rounded hover:bg-slate-600 transition-colors">
+            <button onclick="copyBlock(this)" class="absolute top-2 right-2 inline-flex items-center px-3 py-1.5 text-xs font-medium bg-slate-700 text-slate-100 rounded hover:bg-slate-600 transition-colors">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
               </svg>
@@ -220,11 +175,8 @@ public static class EnvironmentExamples
         <pre class="language-dockerfile"><code class="language-dockerfile">FROM mcr.microsoft.com/dotnet/sdk:10.0-alpine
 WORKDIR /app
 COPY mcp-server.cs .
-ENTRYPOINT ["dotnet", "run", "mcp-server.cs"]</code></pre>
-        <button onclick="copyText(`FROM mcr.microsoft.com/dotnet/sdk:10.0-alpine
-WORKDIR /app
-COPY mcp-server.cs .
-ENTRYPOINT [\"dotnet\", \"run\", \"mcp-server.cs\"]`)" class="absolute top-2 right-2 inline-flex items-center px-3 py-1.5 text-xs font-medium bg-slate-700 text-slate-100 rounded hover:bg-slate-600 transition-colors">
+ENTRYPOINT ["dotnet", "run", "mcp-server.cs", "-v", "q"]</code></pre>
+        <button onclick="copyBlock(this)" class="absolute top-2 right-2 inline-flex items-center px-3 py-1.5 text-xs font-medium bg-slate-700 text-slate-100 rounded hover:bg-slate-600 transition-colors">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
           </svg>
@@ -235,25 +187,31 @@ ENTRYPOINT [\"dotnet\", \"run\", \"mcp-server.cs\"]`)" class="absolute top-2 rig
     <!-- Quick Start -->
     <div class="bg-card border border-border rounded-lg p-6">
       <h2 class="text-xl font-semibold mb-3">Quick Start</h2>
-      <p class="text-muted-foreground mb-4">Get up and running in 3 steps</p>
+      <p class="text-muted-foreground mb-4">Get up and running in your project, in 4 steps</p>
       <ol class="space-y-3 text-slate-700">
         <li class="flex gap-3">
           <span class="flex-shrink-0 w-6 h-6 bg-cyan-800 text-white rounded-full flex items-center justify-center text-sm font-bold">
             1
           </span>
-          <span>Copy a .cs file from the catalog</span>
+          <span>Save a .cs file from the catalog into .mcp-servers/ in your project</span>
         </li>
         <li class="flex gap-3">
           <span class="flex-shrink-0 w-6 h-6 bg-cyan-800 text-white rounded-full flex items-center justify-center text-sm font-bold">
             2
           </span>
-          <span>Create .mcp.json with the configuration above</span>
+          <span>Run dotnet build .mcp-servers/your-server.cs -v q one time, so the first client start is not a timeout</span>
         </li>
         <li class="flex gap-3">
           <span class="flex-shrink-0 w-6 h-6 bg-cyan-800 text-white rounded-full flex items-center justify-center text-sm font-bold">
             3
           </span>
-          <span>Restart your LLM client and start using the tools</span>
+          <span>Create .mcp.json in the project root with the configuration above, and commit it</span>
+        </li>
+        <li class="flex gap-3">
+          <span class="flex-shrink-0 w-6 h-6 bg-cyan-800 text-white rounded-full flex items-center justify-center text-sm font-bold">
+            4
+          </span>
+          <span>Restart your LLM client in the project directory, and start using the tools</span>
         </li>
       </ol>
     </div>

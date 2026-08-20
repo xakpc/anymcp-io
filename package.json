@@ -9,6 +9,7 @@
     "deploy": "npm run build && wrangler pages deploy _site",
     "test": "node scripts/run-tests.js",
     "test:lint": "node scripts/run-tests.js --layer lint",
+    "test:site": "node scripts/run-tests.js --layer site",
     "test:build": "node scripts/run-tests.js --layer build",
     "test:protocol": "node scripts/run-tests.js --layer protocol",
     "test:list": "node scripts/run-tests.js --list"

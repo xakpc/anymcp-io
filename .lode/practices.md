@@ -41,6 +41,31 @@ Prefer a package that builds without a warning. A build warning breaks the copy-
 the user sees it on the first run. This is why `image-utility` stays on ImageSharp 3.x. See
 [server inventory](catalog/server-inventory.md).
 
+## A server for one platform must still start on every platform
+
+The test harness builds and probes each server on Linux. A server that speaks to one operating system
+only must therefore compile, start, and list its tools everywhere. Two rules make this true:
+
+- Run no platform call while the host starts. Put the call in the tool method, and not in the
+  top-level statements. A `DllImport` resolves at the first call, so a start on another platform
+  never loads the library.
+- Start each tool with a guard that throws:
+
+  ```csharp
+  if (!OperatingSystem.IsWindows())
+  {
+      throw new PlatformNotSupportedException("...");
+  }
+  ```
+
+Say the platform in the `description`, and give the server a tag for it. The front matter has no
+field for a platform, and the lint layer refuses an unknown field.
+
+Prefer a portable package to a platform library. `System.Drawing.Common` runs on Windows only, and a
+reference to it from a plain `net10.0` target makes CA1416 warnings that fail the build layer.
+`win-app-screenshots` uses P/Invoke and ImageSharp instead. See
+[Windows window capture](catalog/windows-window-capture.md).
+
 ## Send all logs to stderr
 
 Stdio transport uses standard output for protocol messages. A log line on standard output damages the

@@ -1,0 +1,194 @@
+---
+permalink: "/install.md"
+---
+# Install any AnyMCP server
+
+> AnyMCP is a catalog of MCP servers that are each one C# file. You save the file, and you
+> point your MCP client at `dotnet run <file>.cs -v q`. There is no project file, no build
+> step of your own, and no container. The only prerequisite is the .NET 10 SDK.
+
+This page holds the parts that are the same for every server. Each server also has its own page with
+the exact commands for that server. Start there:
+
+- Catalog index for agents: {{ site.url }}/llms.txt
+- Catalog as JSON: {{ site.url }}/servers.json
+- One server: {{ site.url }}/servers/<id>/index.md
+
+**The default is a project install.** The server file goes in the project, and the configuration goes
+in the `.mcp.json` of the project. Nothing is written outside the project directory, and no other
+project on the machine changes. Install for the user only when the user asks for it.
+
+## Prerequisite: the .NET 10 SDK
+
+```
+dotnet --version
+```
+
+The output must start with `10.`. A file-based app with `#:package` directives is a .NET 10
+SDK feature, so every earlier SDK fails, and the error does not always say why.
+
+If `dotnet` is missing, or the version is below 10, install the SDK first:
+
+- Windows: `winget install Microsoft.DotNet.SDK.10`
+- macOS: `brew install --cask dotnet-sdk`, or the installer from https://dotnet.microsoft.com/download
+- Linux: follow https://learn.microsoft.com/dotnet/core/install/linux for your distribution
+
+Open a new shell after the install, so that `dotnet` is on the PATH.
+
+## Step 1. Put the file in the project
+
+From the root directory of the project:
+
+```
+mkdir -p .mcp-servers
+curl -fsSL -o .mcp-servers/<file>.cs {{ site.url }}/servers/<id>/<id>.cs
+```
+
+In PowerShell, `curl` is a different command. Use `Invoke-WebRequest` instead:
+
+```
+New-Item -ItemType Directory -Force .mcp-servers | Out-Null
+Invoke-WebRequest -Uri "{{ site.url }}/servers/<id>/<id>.cs" -OutFile ".mcp-servers/<file>.cs"
+```
+
+Commit the file. It is the whole server, so a person who clones the project needs nothing else.
+
+## Step 2. Build one time, before you register the server
+
+```
+dotnet build .mcp-servers/<file>.cs -v q
+```
+
+The first build restores the NuGet packages and compiles. On a cold package cache this
+takes from 30 seconds to two minutes. Most MCP clients give a stdio server about 30 seconds
+to answer `initialize`, so a server that was never built reports a connection failure that
+is only a timeout. Build one time by hand, and the first client start is fast.
+
+**The build adds no file to the project.** A file-based app is not a project, so there is no `bin`
+directory and no `obj` directory next to the `.cs` file. The SDK keeps the compiled output in a cache
+of the user, under `%TEMP%/dotnet/runfile/` on Windows and `$TMPDIR/dotnet/runfile/` elsewhere, in a
+directory named for the file and a hash of its content. So `.gitignore` needs no new line, and a
+`git status` after a build shows only the `.cs` file you added.
+
+For Claude Code you can also raise the startup limit instead, in milliseconds:
+
+```
+MCP_TIMEOUT=120000 claude
+```
+
+In PowerShell: `$env:MCP_TIMEOUT = "120000"; claude`
+
+## Step 3. Register the server in the project
+
+### Claude Code
+
+```
+claude mcp add <id> --scope project -- dotnet run ./.mcp-servers/<file>.cs -v q
+```
+
+`--scope project` writes `.mcp.json` in the root directory of the project. Commit that file, and
+every person who clones the project gets the same server.
+
+The `--` separator is required. Everything after it is the command that Claude Code runs.
+
+Pass a secret by name, before the `--`. Claude Code expands `${...}` from the environment, so the
+committed file holds no value:
+
+```
+claude mcp add <id> --scope project --env SOME_KEY=${SOME_KEY} -- dotnet run ./.mcp-servers/<file>.cs -v q
+```
+
+### A client that reads a JSON configuration file
+
+Claude Code, Claude Desktop, Cursor, and Windsurf use the `mcpServers` key. Put this in `.mcp.json`
+in the root directory of the project:
+
+```json
+{
+  "mcpServers": {
+    "<id>": {
+      "type": "stdio",
+      "command": "dotnet",
+      "args": ["run", "./.mcp-servers/<file>.cs", "-v", "q"]
+    }
+  }
+}
+```
+
+Visual Studio and VS Code use `servers` in place of `mcpServers`. The object inside is the
+same.
+
+The path is relative to the project. It stays correct for every person who clones the project, and on
+every operating system, so it needs no Windows backslash and no absolute path. It resolves against
+the working directory of the client, which is the project directory.
+
+## Step 4. Restart the client, and verify
+
+```
+claude mcp list
+claude mcp get <id>
+```
+
+The server must show as connected. Then ask the model to call one of its tools, and confirm
+that a result comes back. A client with no CLI shows the same list in its own settings.
+
+Claude Code asks a person to approve a project server the first time it reads `.mcp.json`. The prompt
+exists so that a repository you clone cannot start a process on your machine without your agreement.
+
+## Install for every project instead
+
+Do this only when the user asks for it.
+
+```
+claude mcp add <id> --scope user -- dotnet run <ABSOLUTE_PATH>/<file>.cs -v q
+```
+
+At this scope the path must be absolute, because the working directory is different in each project.
+Keep the file in a directory that stays, for example `~/.mcp-servers/`, and do not move it: the
+configuration holds the path. In JSON on Windows each backslash of an absolute path is doubled, for
+example `C:\Users\you\.mcp-servers\my-server.cs`.
+
+`--scope local` is a third choice. It keeps the server in this project, and private to you, so the
+project gets no `.mcp.json` entry to commit.
+
+## Why `-v q`
+
+Stdio transport uses standard output for the JSON-RPC messages. Without `-v q`, `dotnet run`
+can write build output to standard output, and one such line breaks the protocol stream. The
+client then reports a parse error, or shows no tools.
+
+Keep `-v q` in every configuration. It is two array elements, `"-v"` and `"q"`, and not one
+element `"-v q"`.
+
+## Tool names
+
+The C# SDK converts each method name to snake case. A method `GeneratePassword` is
+`generate_password` on the wire. Each server page gives both names.
+
+## Secrets
+
+A server that needs a key lists it on its page. Every AnyMCP server starts and lists its
+tools with no key set; the key is needed only when the model calls a tool. So a failure at
+startup is never a missing key.
+
+`.mcp.json` belongs to the project and goes into version control, so it must hold the name of a
+variable and never a value.
+
+## Remove a server
+
+```
+claude mcp remove <id> --scope project
+```
+
+Then delete `.mcp-servers/<file>.cs`.
+
+## Troubleshooting
+
+| Symptom | Cause |
+|---|---|
+| Connection times out on the first start | The build was never run. Do step 2, then register again. |
+| Connected, but no tool appears | The SDK is below 10, or the path in `args` is wrong. |
+| A JSON parse error in the client log | `-v q` is missing from `args`, so build output reached standard output. |
+| `dotnet: command not found` | The .NET 10 SDK is not installed, or not on the PATH. |
+| The server works for you and not for a colleague | They did not run step 2. The build cache belongs to one user. |
+| The server stopped working after a move | A relative path follows the project. An absolute path at user scope does not. |

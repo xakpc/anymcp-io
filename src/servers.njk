@@ -10,6 +10,7 @@ showNavigation: false
 eleventyComputed:
   title: "{{ serverData.name }}"
   description: "{{ serverData.description }}"
+  agentMarkdown: "/servers/{{ serverData.id }}/index.md"
 ---
 
 <div class="container mx-auto px-4 py-8 max-w-6xl">
@@ -54,18 +55,24 @@ eleventyComputed:
             </svg>
             Copy Code
           </button>
-          <button onclick="downloadServerFile('{{ serverData.name }}')" class="inline-flex items-center px-4 py-2 bg-transparent border border-border rounded-md hover:bg-accent hover:text-accent-foreground transition-colors">
+          <button onclick="downloadServerFile('{{ serverData.id }}', '{{ serverData.name }}')" class="inline-flex items-center px-4 py-2 bg-transparent border border-border rounded-md hover:bg-accent hover:text-accent-foreground transition-colors">
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
             </svg>
             Download File
           </button>
-          <a href="https://github.com/xakpc/anymcp-io/blob/main/src/_data/mcp/{{ serverData.name }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center px-4 py-2 bg-transparent border border-border rounded-md hover:bg-accent hover:text-accent-foreground transition-colors">
+          <a href="{{ site.github }}/blob/main/mcp/{{ serverData.name }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center px-4 py-2 bg-transparent border border-border rounded-md hover:bg-accent hover:text-accent-foreground transition-colors">
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
             </svg>
             View on GitHub
           </a>
+          <button type="button" onclick="copyPrompt(this)" data-prompt="Install the {{ serverData.id }} MCP server into this project, not globally. Read {{ site.url }}/servers/{{ serverData.id }}/index.md and follow it exactly for my operating system and shell. Tell me each file you change before you change it." class="inline-flex items-center px-4 py-2 bg-transparent border border-border rounded-md hover:bg-accent hover:text-accent-foreground transition-colors">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+            </svg>
+            Copy Agent Prompt
+          </button>
         </div>
       </div>
 
@@ -138,38 +145,45 @@ eleventyComputed:
           <div class="space-y-4">
             <div>
               <h4 class="font-semibold mb-2">1. Save the server code</h4>
-              <p class="text-sm text-muted-foreground">Copy the code above and save it as <code class="bg-muted px-1 py-0.5 rounded text-xs">{{ serverData.name }}</code></p>
+              <p class="text-sm text-muted-foreground">Put it in your project, in a <code class="bg-muted px-1 py-0.5 rounded text-xs">.mcp-servers/</code> directory. Copy the code above, or download it from <a href="/servers/{{ serverData.id }}/{{ serverData.name }}" class="underline hover:text-foreground">/servers/{{ serverData.id }}/{{ serverData.name }}</a>. Commit it: the file is the whole server.</p>
             </div>
             <div>
-              <h4 class="font-semibold mb-2">2. Configure your MCP client</h4>
-              <p class="text-sm text-muted-foreground mb-2">Add this configuration to your <code class="bg-muted px-1 py-0.5 rounded text-xs">.mcp.json</code> file:</p>
+              <h4 class="font-semibold mb-2">2. Build it once</h4>
+              <p class="text-sm text-muted-foreground mb-2">The first build restores the packages. It takes longer than the startup timeout of most clients, so run it by hand before you go on:</p>
+<pre class="language-bash"><code class="language-bash">dotnet build .mcp-servers/{{ serverData.name }} -v q</code></pre>
+              <p class="text-sm text-muted-foreground mt-2">This adds no <code class="bg-muted px-1 py-0.5 rounded text-xs">bin</code> or <code class="bg-muted px-1 py-0.5 rounded text-xs">obj</code> directory to your project. A file-based app is not a project, so the SDK caches the build under your temp directory instead. Your <code class="bg-muted px-1 py-0.5 rounded text-xs">.gitignore</code> needs no new line.</p>
+            </div>
+            <div>
+              <h4 class="font-semibold mb-2">3. Configure your MCP client</h4>
+              <p class="text-sm text-muted-foreground mb-2">Add this to <code class="bg-muted px-1 py-0.5 rounded text-xs">.mcp.json</code> in your project root, and commit it. Everyone who clones the project then gets the server.</p>
               <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
                 <p class="text-sm text-blue-800">
-                  <strong>Note:</strong> This example is for Visual Studio and similar clients. For Claude Code, use <code class="bg-blue-100 px-1 py-0.5 rounded text-xs">mcpServers</code> instead of <code class="bg-blue-100 px-1 py-0.5 rounded text-xs">servers</code>.
+                  <strong>Note:</strong> This example is for Claude Code, Claude Desktop, Cursor, and Windsurf. Visual Studio and VS Code use <code class="bg-blue-100 px-1 py-0.5 rounded text-xs">servers</code> instead of <code class="bg-blue-100 px-1 py-0.5 rounded text-xs">mcpServers</code>.
                 </p>
               </div>
-              <pre class="language-json"><code class="language-json">{
-  "servers": {
+<pre class="language-json"><code class="language-json">{
+  "mcpServers": {
     "{{ serverData.id }}": {
       "type": "stdio",
       "command": "dotnet",
-      "args": ["run", "C:\\path\\to\\{{ serverData.name }}"]{% if serverData.envVars and serverData.envVars.length > 0 %},
+      "args": ["run", "./.mcp-servers/{{ serverData.name }}", "-v", "q"]{% if serverData.envVars and serverData.envVars.length > 0 %},
       "env": {
         {%- for envVar in serverData.envVars %}
-        "{{ envVar }}": "<YOUR_{{ envVar }}>"{%- if not loop.last %},{% endif %}
+        "{{ envVar }}": "${{ "{" }}{{ envVar }}{{ "}" }}"{%- if not loop.last %},{% endif %}
         {%- endfor %}
       }{% endif %}
     }
   }
 }</code></pre>
-            </div>
-            <div>
-              <h4 class="font-semibold mb-2">3. Set environment variables</h4>
-              <p class="text-sm text-muted-foreground">Configure any required environment variables (see sidebar)</p>
+              {%- if serverData.envVars and serverData.envVars.length > 0 %}
+              <p class="text-sm text-muted-foreground mt-2">Because this file is committed, it names the variable and never holds the value. Claude Code expands <code class="bg-muted px-1 py-0.5 rounded text-xs">${...}</code> from your environment when it reads the file.</p>
+              {%- endif %}
+              <p class="text-sm text-muted-foreground mt-2">The path is relative to the project, so it works for everyone who clones it, on every operating system. <code class="bg-muted px-1 py-0.5 rounded text-xs">-v q</code> is required: standard output carries the JSON-RPC stream, and without it the build output can reach that stream and break the connection.</p>
+              <p class="text-sm text-muted-foreground mt-2">With Claude Code, <code class="bg-muted px-1 py-0.5 rounded text-xs">claude mcp add {{ serverData.id }} --scope project -- dotnet run ./.mcp-servers/{{ serverData.name }} -v q</code> writes the same entry for you. Add <code class="bg-muted px-1 py-0.5 rounded text-xs">--scope user</code> instead, with an absolute path, to install it for every project.</p>
             </div>
             <div>
               <h4 class="font-semibold mb-2">4. Restart your LLM client</h4>
-              <p class="text-sm text-muted-foreground">Restart Claude Desktop, Continue, or your preferred MCP client</p>
+              <p class="text-sm text-muted-foreground">Restart your client in the project directory, then check that {{ serverData.id }} shows as connected. Claude Code asks you to approve a project server the first time it reads <code class="bg-muted px-1 py-0.5 rounded text-xs">.mcp.json</code>.</p>
             </div>
           </div>
         </div>

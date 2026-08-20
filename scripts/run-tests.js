@@ -20,7 +20,7 @@ import { loadFullCatalog } from '../test/lib/catalog.js';
 
 // Layers run in this order. Lint is first, because it needs no .NET toolchain and
 // fails in about a second.
-const LAYERS = ['lint', 'build', 'protocol'];
+const LAYERS = ['lint', 'site', 'build', 'protocol'];
 
 const repoRoot = fileURLToPath(new URL('../', import.meta.url));
 process.chdir(repoRoot);

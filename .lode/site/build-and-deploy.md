@@ -25,7 +25,8 @@ $env:DEBUG = "Eleventy*"; npx eleventy
 ```javascript
 export default function(eleventyConfig) {
   eleventyConfig.addPassthroughCopy("src/assets");
-  // filters: date, localeString, displayCodeMap
+  eleventyConfig.addPassthroughCopy("src/_headers");
+  // filters: date, localeString, displayCodeMap, wireName, serversManifest
   return {
     templateFormats: ["md", "njk", "html", "liquid"],
     dir: { input: "src", includes: "_includes", data: "_data", output: "_site" },
@@ -41,8 +42,19 @@ Filters:
 - `localeString(number)` - adds thousands separators. It returns an empty string for `0`.
 - `displayCodeMap(servers)` - returns a JSON string that maps each server id to its `displayCode`.
   The copy scripts use it. See [client-side behavior](client-side-behavior.md).
+- `wireName(name)` - returns the snake case form of a C# method name, which is the name that a
+  `tools/list` response holds.
+- `serversManifest(serversArray, siteUrl)` - returns the full JSON body of `/servers.json`. It drops
+  `code` and `displayCode`, makes each URL absolute, and adds a `run` block with the correct argv.
+
+Both new filters serve the machine-readable endpoints. See [agent endpoints](agent-endpoints.md).
 
 Note: `src/assets/` is empty at present. The passthrough rule is ready for future static files.
+
+`src/_headers` goes to `_site/_headers`. Eleventy removes the input directory from the path, and
+Cloudflare Pages reads the file from the root of the build output. The file gives
+`text/plain; charset=utf-8` to the `.md` and `.cs` outputs. Without a rule, a `.cs` file has no
+entry in the mime table and becomes `application/octet-stream`.
 
 ## Dependencies
 

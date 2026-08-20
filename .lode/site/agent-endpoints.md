@@ -1,0 +1,117 @@
+# Agent Endpoints
+
+The site gives a second, machine-readable copy of the catalog. A coding agent reads these files
+instead of the HTML, and installs a server with no help from a person.
+
+```mermaid
+flowchart TD
+    A["mcp/*.cs"] --> B["src/_data/servers.js"]
+    B --> C["serversArray"]
+    C --> D["llms.njk<br/>/llms.txt"]
+    C --> E["server-md.njk<br/>/servers/{id}/index.md"]
+    C --> F["server-raw.njk<br/>/servers/{id}/{id}.cs"]
+    C --> G["servers-json.njk<br/>/servers.json"]
+    C --> H["sitemap.njk<br/>/sitemap.xml"]
+    I["agent-install.njk"] --> J["/install.md"]
+    K["robots.njk"] --> L["/robots.txt"]
+```
+
+## The endpoints
+
+| URL | Template | Holds |
+|---|---|---|
+| `/llms.txt` | `src/llms.njk` | the index. One line for each server, and a link to each `.md`. |
+| `/install.md` | `src/agent-install.njk` | the procedure that is the same for every server. |
+| `/servers/{id}/index.md` | `src/server-md.njk` | the full procedure for one server. |
+| `/servers/{id}/{id}.cs` | `src/server-raw.njk` | the source file, byte for byte. |
+| `/servers.json` | `src/servers-json.njk` | the catalog as JSON, with a runnable argv and the default scope. |
+| `/robots.txt` | `src/robots.njk` | allow all, and a pointer to `/llms.txt`. |
+| `/sitemap.xml` | `src/sitemap.njk` | the HTML pages. |
+| `/_headers` | `src/_headers` (passthrough) | the content type of the `.md` and `.cs` files. |
+
+Each template is a `.njk` file with a `permalink`. `templateFormats` controls which input files
+Eleventy finds, and not which output files it writes, so `.txt`, `.json`, and `.md` outputs need no
+change to the configuration.
+
+## Invariants
+
+**Write `| safe` on every value.** These outputs are not HTML, and Nunjucks escapes by default. An
+escaped `<` makes a `.cs` file that does not compile, and an escaped `"` makes JSON that does not
+parse. The rule to review is simple: a non-HTML template holds no bare `{{ }}`.
+
+The one place that must **not** have `| safe` is the `data-prompt` attribute in `servers.njk`. That
+value goes into HTML, the escape is correct there, and `dataset` decodes it again.
+
+**The raw endpoint uses `code`, and not `displayCode`.** `/servers/{id}/{id}.cs` is the catalog file,
+byte for byte. `displayCode` cuts the front matter, trims the last newline, and decodes HTML entities,
+so it cannot give the same bytes. The HTML page and the clipboard continue to use `displayCode`.
+`test/site.test.js` compares a SHA-256 hash and fails if the two differ.
+
+**Every URL is absolute.** An agent reads these files with no base URL, so a relative link is dead.
+Use `site.url` from `src/_data/site.json`.
+
+**The default install is a project install.** The instructions put the server file in
+`.mcp-servers/` in the project of the user, and the configuration in the `.mcp.json` of that
+project. The path in `args` is therefore relative, `./.mcp-servers/{id}.cs`, which is correct for
+each person who clones the project, and on each operating system. A relative path also needs no
+Windows backslash, so no snippet on the site doubles a backslash any more.
+
+An install for the user, with `--scope user`, comes last on each page, and needs an absolute path.
+An agent must not choose it without a request from the user. `test/site.test.js` checks that
+`--scope project` comes before `--scope user` on each `.md` page.
+
+**A committed configuration holds no secret.** `.mcp.json` belongs to the project, so the `env`
+block names the variable and lets the client expand it. The test checks this for each server that
+has an `envVars` list.
+
+**Every install snippet holds `-v` and `q`.** They are two array elements, and not one element
+`"-v q"`. Standard output carries the JSON-RPC stream, and without the flag the build output can reach
+that stream and break the connection.
+
+**Tool names appear in both forms.** The SDK converts a C# method name to snake case, so a
+`tools/list` response holds `generate_password` where the page shows `GeneratePassword`. The
+`wireName` filter in `.eleventy.js` makes the first form. See
+[automated testing](../catalog/automated-testing.md).
+
+## The two filters
+
+`.eleventy.js` holds `wireName` and `serversManifest`. `serversManifest` builds the whole
+`/servers.json` body in JavaScript, and the template prints the string. JSON that a template writes by
+hand breaks on the first description that holds a quote. This follows `displayCodeMap`, which works
+the same way.
+
+`serversManifest` drops `code` and `displayCode`, which are larger than all other fields together, and
+it adds a `run` block:
+
+```json
+"run": {
+  "command": "dotnet",
+  "args": ["run", "./.mcp-servers/xquik.cs", "-v", "q"],
+  "cwd": "the project directory"
+}
+```
+
+A program that reads the manifest therefore cannot build an argv that loses `-v q`, and it needs no
+path substitution, because the path is the one that the default install makes.
+
+## Discovery
+
+Three paths lead an agent to these files:
+
+- `/llms.txt`, which is the entry point that the llmstxt.org convention defines.
+- A `link rel="alternate"` in `base.njk` on every page. `servers.njk` sets `agentMarkdown` in its
+  `eleventyComputed` block, and `base.njk` writes the link when the value exists.
+- The **Copy Agent Prompt** button on each server page. See
+  [client-side behavior](client-side-behavior.md).
+
+## Content types
+
+Cloudflare Pages sets the content type from a file extension, and then applies `_headers`, so a rule
+in that file wins. Without a rule, a `.cs` file has no entry and becomes
+`application/octet-stream`, which a browser downloads and some agent fetchers refuse. The rules give
+`text/plain; charset=utf-8` to `.md` and `.cs`.
+
+Do not add a CORS header. Pages sends `access-control-allow-origin: *` on each asset already.
+
+Related: [Templates and layouts](templates-and-layouts.md), [Data pipeline](data-pipeline.md),
+[Build and deploy](build-and-deploy.md), [Automated testing](../catalog/automated-testing.md).

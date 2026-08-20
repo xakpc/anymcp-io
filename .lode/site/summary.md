@@ -1,8 +1,10 @@
 # Site Domain - Summary
 
 The site is an Eleventy (11ty) static site. Input is `src/`. Output is `_site/`. The build reads the
-`.cs` files in `mcp/`, and makes three kinds of page: the home page, one detail page for each server,
-and a setup guide.
+`.cs` files in `mcp/`, and makes two sets of output. People read the HTML pages: the home page, one
+detail page for each server, and a setup guide. Coding agents read the text files: `/llms.txt`,
+`/install.md`, `/servers.json`, and one `.md` page and one `.cs` file for each server. See
+[agent endpoints](agent-endpoints.md).
 
 ```mermaid
 flowchart LR
@@ -17,6 +19,8 @@ flowchart LR
     F --> I["_site/"]
     H --> I
     J["setup.njk"] --> I
+    E --> K["server-md.njk, server-raw.njk,<br/>servers-json.njk, llms.njk"]
+    K --> I
 ```
 
 Topics in this domain:
@@ -24,6 +28,7 @@ Topics in this domain:
 - [Templates and layouts](templates-and-layouts.md) - the template hierarchy and the pages.
 - [Styling](styling.md) - Tailwind theme, fonts, and code colors.
 - [Client-side behavior](client-side-behavior.md) - search, copy, download, and toast.
+- [Agent endpoints](agent-endpoints.md) - the machine-readable copy of the catalog.
 - [Build and deploy](build-and-deploy.md) - commands, configuration, and hosting.
 
 Related: [Catalog domain](../catalog/summary.md), [Practices](../practices.md).

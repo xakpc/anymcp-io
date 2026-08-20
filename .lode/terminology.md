@@ -24,5 +24,22 @@
 - Layer - One stage of the harness: `lint`, `build`, or `protocol`. They run in that order.
 - Stray stdout - A line that a server writes to standard output that is not a JSON-RPC message. One
   such line breaks the protocol stream, so the protocol layer fails on it.
+- `llms.txt` - The file at the site root that gives a coding agent the index of the catalog. The
+  llmstxt.org convention defines the shape: one H1, a blockquote, and H2 sections of links.
+- Agent endpoint - One of the machine-readable outputs of the site: `/llms.txt`, `/install.md`,
+  `/servers.json`, `/servers/{id}/index.md`, or `/servers/{id}/{id}.cs`. See
+  [agent endpoints](site/agent-endpoints.md).
+- Raw source URL - `/servers/{id}/{id}.cs`. It holds the catalog file, byte for byte, so an agent
+  downloads it and does not read the HTML page.
+- Agent prompt - The one line that the **Copy Agent Prompt** button puts on the clipboard. It names
+  the `.md` page of a server, and a coding agent reads that page and installs the server.
+- Project install - The default. The server file goes in `.mcp-servers/` in the project of the user,
+  and the entry goes in the `.mcp.json` of that project. The path is relative, and both files go into
+  version control.
+- User install - The alternative, with `--scope user`. The server is available in every project of
+  one person, and the path must be absolute. Use it only when the user asks for it.
+- Runfile cache - The directory where the SDK keeps the build output of a file-based app, under
+  `%TEMP%/dotnet/runfile/`. A `.cs` file therefore makes no `bin` or `obj` directory beside it.
+- `_headers` - The Cloudflare Pages file that sets the content type of the `.md` and `.cs` outputs.
 - Wire name - The tool name that a client sees. The SDK makes it from the C# method name in snake
   case, so `GeneratePassword` becomes `generate_password`. The catalog page shows the C# name.

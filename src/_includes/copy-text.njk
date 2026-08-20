@@ -1,12 +1,21 @@
 <script>
-function copyText(text) {
-  navigator.clipboard.writeText(text).then(function() {
-    const button = event.target.closest('button');
-    const originalContent = button.innerHTML;
-    button.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+// Copies the code block that this button belongs to. The button sits in the same
+// container as the <pre>, so the text has exactly one source: the block the reader sees.
+// The previous version took the snippet as an argument, which meant every snippet was
+// written twice and escaped twice.
+function copyBlock(buttonElement) {
+  const container = buttonElement.closest('.relative') || buttonElement.parentElement;
+  const block = container && container.querySelector('pre code');
+  if (!block) return;
+
+  navigator.clipboard.writeText(block.textContent).then(function() {
+    const originalContent = buttonElement.innerHTML;
+    buttonElement.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
     setTimeout(() => {
-      button.innerHTML = originalContent;
+      buttonElement.innerHTML = originalContent;
     }, 2000);
+  }).catch(function(err) {
+    console.error('Failed to copy: ', err);
   });
 }
 </script>

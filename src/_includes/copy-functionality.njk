@@ -73,9 +73,10 @@ window.copyServerCodeLarge = function(serverId, buttonElement) {
   });
 };
 
-// Download server file functionality. The file name is the server id plus '.cs'.
-window.downloadServerFile = function(filename) {
-  const code = window.serverCode[filename.replace('.cs', '')];
+// Download server file functionality. The caller passes the server id, so this does
+// not depend on the 'name' field being the id plus '.cs'.
+window.downloadServerFile = function(serverId, filename) {
+  const code = window.serverCode[serverId];
   if (!code) return;
 
   const blob = new Blob([code], { type: 'text/plain' });
@@ -105,5 +106,33 @@ window.downloadServerFile = function(filename) {
   button.className = 'inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors';
 
   restoreButton(button, originalText, originalClasses);
+};
+
+// Copies the agent prompt that the button carries in its data-prompt attribute. The text
+// never enters the onclick attribute, so a quote in it cannot break the markup: Nunjucks
+// escapes the attribute on the way in, and dataset decodes it back.
+window.copyPrompt = function(buttonElement) {
+  const prompt = buttonElement && buttonElement.dataset.prompt;
+  if (!prompt) return;
+
+  navigator.clipboard.writeText(prompt).then(function() {
+    const originalContent = buttonElement.innerHTML;
+    const originalClasses = buttonElement.className;
+
+    buttonElement.innerHTML = `
+      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+      </svg>
+      Prompt copied!
+    `;
+
+    buttonElement.style.backgroundColor = '#16a34a';
+    buttonElement.style.color = 'white';
+    buttonElement.style.borderColor = '#16a34a';
+
+    restoreButton(buttonElement, originalContent, originalClasses);
+  }).catch(function(err) {
+    console.error('Failed to copy: ', err);
+  });
 };
 </script>

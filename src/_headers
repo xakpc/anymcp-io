@@ -1,0 +1,22 @@
+# Cloudflare Pages reads this file from the root of the build output.
+#
+# Pages sets Content-Type from a mime lookup, then applies this file, so a rule here
+# overrides the lookup. Without these rules:
+#   .cs -> no mime entry -> application/octet-stream -> the browser downloads the file
+#          and some agent fetchers refuse a non-text content type.
+#   .md -> text/markdown -> most browsers download it.
+#
+# text/plain, not text/markdown: browsers render text/plain inline and every agent
+# fetcher accepts it. Nothing that reads these files needs the markdown media type.
+#
+# A rule compiles to ^...$ with * replaced by a capture group, so an extension suffix
+# matches. Keep the rules disjoint: two rules that set the same header on one path are
+# joined with a comma, not overridden.
+#
+# Do not add access-control-allow-origin. Pages already sends "*" on every asset.
+
+/*.md
+  Content-Type: text/plain; charset=utf-8
+
+/*.cs
+  Content-Type: text/plain; charset=utf-8

@@ -1,0 +1,8 @@
+---
+pagination:
+  data: serversArray
+  size: 1
+  alias: serverData
+permalink: "/servers/{{ serverData.id }}/{{ serverData.name }}"
+---
+{{- serverData.code | safe -}}
