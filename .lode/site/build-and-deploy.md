@@ -73,7 +73,9 @@ pages_build_output_dir = "_site"
 ```
 
 The public domain is `https://anymcp.net` (`src/_data/site.json`). The Plausible analytics script in
-`base.njk` must use the same domain, or it records no data. The Cloudflare project name `anymcp-io` and
+`base.njk` identifies the site with a script file name that Plausible supplies
+(`https://plausible.io/js/pa-bNgyo1A6RpizKemf0zkKa.js`), and not with a `data-domain` attribute. Keep
+the file name as Plausible gives it, or the site records no data. The Cloudflare project name `anymcp-io` and
 the GitHub repository name `anymcp-io` keep the old spelling. They are identifiers, and not the domain.
 
 The output is fully static, so any static host can serve `_site/`.
